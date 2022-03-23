@@ -1,0 +1,27 @@
+{
+  "name": "logseq-starter-plugin",
+  "version": "1.0",
+  "description": "Starter Plugin",
+  "main": "dist/index.html",
+  "targets": {
+    "main": false
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "parcel build --no-source-maps index.html --public-url ./"
+  },
+  "keywords": [],
+  "author": "Aryan Sawhney",
+  "license": "MIT",
+  "dependencies": {
+    "@logseq/libs": "0.0.1-alpha.34"
+  },
+  "logseq": {
+    "id": "logseq-starter-plugin",
+    "title": "logseq-starter-plugin",
+    "icon": "./icon.png"
+  },
+  "devDependencies": {
+    "parcel": "^2.0.0"
+  }
+}

@@ -23,7 +23,7 @@ async function createExport() {
     finalString = finalString.replaceAll("#+BEGIN_QUOTE", "");
     finalString = finalString.replaceAll("#+END_QUOTE", "");
     console.log(finalString)
-    download(`${(await logseq.Editor.getCurrentPage()).originalName}.md`, finalString);
+    download(`${(await logseq.Editor.getCurrentPage()).originalName}.orig`, finalString);
 }
 
 function download(filename, text) {

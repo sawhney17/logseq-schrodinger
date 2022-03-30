@@ -84,6 +84,8 @@ export async function formatText(text2, number) {
                 return match.replaceAll("::", ":");
             }
         });
+        /// Add --- above and below the text
+        text = `---\n${text}\n---`;
     }
 
     //conversion of links to hugo syntax

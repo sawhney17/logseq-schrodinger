@@ -110,7 +110,7 @@ async function parseText(block: BlockEntity) {
 
     //conversion of links to hugo syntax https://gohugo.io/content-management/cross-references/
     if (logseq.settings.linkFormat == "Hugo Format") {
-        text = text.replaceAll(/\[\[.*\]\]/g, (match) => {
+        text = text.replaceAll(/\[\[.*?\]\]/g, (match) => {
             const txt = match.substring(2, match.length - 2)
             return `[${txt}]({{< ref ${txt.replaceAll(" ", "_")} >}})`
         })
@@ -147,20 +147,14 @@ async function parseText(block: BlockEntity) {
     re = /#\+BEGIN_WARNING.*\n(.*)\n#\+END_WARNING/gm;
     text = text.replace(re, '{{< logseq/orgwarning >}}$1{{< / logseq/orgwarning >}}');
 
-    console.log("txt", text)
-    return text
-}
-
-//import into parseText
-export async function formatText(text2, number) {
-    // console.log("formatText:", text2, number)
-    var text: string = text2.replace(/:LOGBOOK:|collapsed:: true/gi, "");
+    text = text.replace(/:LOGBOOK:|collapsed:: true/gi, "");
     if (text.includes("CLOCK: [")) {
         text = text.substring(0, text.indexOf("CLOCK: ["));
     }
 
     const rxGetId = /\(\(([^)]*)\)\)/;
     const blockId = rxGetId.exec(text);
+    console.log(blockId)
     if (blockId != null) {
         const block = await logseq.Editor.getBlock(blockId[1], {
             includeChildren: true,

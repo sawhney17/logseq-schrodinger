@@ -3,19 +3,28 @@ import { PageEntity, BlockEntity, SettingSchemaDesc } from '@logseq/libs/dist/LS
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 export var blocks2 = []
+import React from "react";
+import ReactDOM from "react-dom";
+import App from './App';
+import { handleClosePopup } from './handleClosePopup';
 
+
+var errorTracker = []
 var zip = new JSZip();
 export async function getAllPublicPages() {
+
+
+    errorTracker = []
     logseq.DB.q("(page-property public)").then((result) => {
         const mappedResults = result.map((page) => { return page.name })
         console.log(mappedResults)
         for (const x in mappedResults) {
             console.log(x)
             console.log(mappedResults.length)
-            if (x != `${mappedResults.length-1}`){
-            getBlocksInPage({ "page": mappedResults[x] }, false, false)
+            if (x != `${mappedResults.length - 1}`) {
+                getBlocksInPage({ "page": mappedResults[x] }, false, false)
             }
-            else{
+            else {
                 getBlocksInPage({ "page": mappedResults[x] }, false, true)
             }
         }
@@ -37,12 +46,12 @@ export async function getBlocksInPage(e, singleFile, isLast) {
         const pvalue = curPage.properties[prop].toLowerCase
         finalString = `${finalString}\n${prop}:`
         //FIXME ugly
-        if ( Array.isArray(pvalue) ) { 
-            for (const key in pvalue) finalString=`${finalString}\n- ${pvalue[key].replaceAll("[[", "")}`
-        } else { 
-            if ( pvalue === "category" ) pvalue = "categories"
-            if ( pvalue in ["categories", "tags" ] ) txt = "\n-"
-            finalString=`${finalString}${txt} ${pvalue}` 
+        if (Array.isArray(pvalue)) {
+            for (const key in pvalue) finalString = `${finalString}\n- ${pvalue[key].replaceAll("[[", "")}`
+        } else {
+            if (pvalue === "category") pvalue = "categories"
+            if (pvalue in ["categories", "tags"]) txt = "\n-"
+            finalString = `${finalString}${txt} ${pvalue}`
         }
     }
     finalString = `${finalString}\n---`
@@ -52,21 +61,34 @@ export async function getBlocksInPage(e, singleFile, isLast) {
 
     // finalString = finalString.replaceAll("#+BEGIN_QUOTE", "");
     // finalString = finalString.replaceAll("#+END_QUOTE", "");
+    if (errorTracker.length > 0 ){
+
+    }
     if (singleFile) {
-        download(`${curPage.originalName}.md`, finalString);
+        ReactDOM.render( //Render react component
+            <React.StrictMode>
+              <App/>
+            </React.StrictMode>,
+            document.getElementById("app")
+          );
+          logseq.showMainUI()
+          handleClosePopup()
+        // download(`${curPage.originalName}.md`, finalString);
     }
     else {
         zip.file(`${curPage.originalName}.md`, finalString);
         console.log("HI")
         console.log(isLast)
-        if (isLast){
+        
+        
+        if (isLast) {
             console.log(zip)
             zip.generateAsync({ type: "blob" })
-            .then(function (content) {
-                // see FileSaver.js
-                saveAs(content, "publicExport.zip");
-                zip = new JSZip()
-            });
+                .then(function (content) {
+                    // see FileSaver.js
+                    saveAs(content, "publicExport.zip");
+                    zip = new JSZip()
+                });
         }
     }
 }
@@ -88,7 +110,7 @@ async function parsePage(finalString: string, docTree) {
 
 
 async function parseText(block: BlockEntity) {
-    let re:RegExp
+    let re: RegExp
     let text = block.content
     // console.log("block", block)
     let txtBefore: string = ""
@@ -110,9 +132,15 @@ async function parseText(block: BlockEntity) {
 
     //conversion of links to hugo syntax https://gohugo.io/content-management/cross-references/
     if (logseq.settings.linkFormat == "Hugo Format") {
-        text = text.replaceAll(/\[\[.*?\]\]/g, (match) => {
+        text = await text.replaceAll(/\[\[.*?\]\]/g, async (match) => {
             const txt = match.substring(2, match.length - 2)
-            return `[${txt}]({{< ref ${txt.replaceAll(" ", "_")} >}})`
+            if (await logseq.Editor.getPage(txt) != null) {
+                return `[${txt}]({{< ref ${txt.replaceAll(" ", "_")} >}})`
+            }
+            else {
+                errorTracker.push(`${txt} is not a valid page name, will be converted from link to text`)
+                return txt
+            }
         })
     }
     if (logseq.settings.linkFormat == "Without brackets") {
@@ -120,10 +148,6 @@ async function parseText(block: BlockEntity) {
         text = text.replaceAll("]]", "")
     }
 
-    re = /==(.*?)==/g;
-    text = text.replace(re, '{{< logseq/lshighlight >}}$1{{< / logseq/lshighlight >}}');
-
-    //No protection against wrong code!
     re = /#\+BEGIN_([A-Z]*).*\n(.*)\n#\+END_.*/gm;
     text = text.replace(re, '{{< logseq/org$1 >}}$2{{< / logseq/org$1 >}}');
     text = text.toLowerCase()

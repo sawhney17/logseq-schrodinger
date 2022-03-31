@@ -2,6 +2,7 @@ import '@logseq/libs';
 import { PageEntity, BlockEntity, SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin';
 import { getAllPublicPages, getBlocksInPage } from './utils';
 
+
 let settings: SettingSchemaDesc[] = [
   {
     key: "linkFormat",

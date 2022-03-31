@@ -1,0 +1,96 @@
+html {
+  line-height: 1.5; /* 1 */
+  -webkit-text-size-adjust: 100%; /* 2 */
+  -moz-tab-size: 4; /* 3 */
+  -o-tab-size: 4;
+     tab-size: 4; /* 3 */
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */;
+  --cl-charcoal: #3f3f3f;
+  --cl-darkjungle: #1e1e1e;
+  --cl-thunder: #4c4c4c;
+
+
+}
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: hsla(0, 0%, 10%, 0.5);
+  z-index: 9;
+}
+.smartblock-popup {
+  padding: 1em;
+  background: rgb(40, 157, 165);
+  z-index: 9;
+  border-radius: 10px;
+
+  /* -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); */
+}
+.popup-content {
+  z-index: 10;
+}
+
+.centered-element {
+  margin: 0;
+  position: absolute;
+  top: 30%;
+  transform: translateY(-50%);
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 20px;
+  padding-top: 10px;
+}
+.label-class {
+  color: whitesmoke;
+  font-family: system-ui;
+  padding-bottom: 10px;
+  font-size: larger;
+}
+.smartblock-inserter {
+  padding: 1em;
+  /* background: rgb(40, 157, 165);  */
+  z-index: 9;
+  border-radius: 15px;
+  top: 30%;
+  width: 50%;
+  display: flex;
+  transform: translate(0, 100px);
+  flex-direction: column;
+  color: #ffffff;
+  align-items: center;
+  background-color: var(--cl-darkjungle) !important;
+  border-top: 1px solid var(--cl-charcoal);
+  border-right: 1px solid var(--cl-charcoal);
+  border-bottom: 1px solid var(--cl-charcoal);
+  border-left: 1px solid var(--cl-charcoal);
+  font-size: 1.2em;
+  font-family: system-ui;
+  padding: 0.5em;
+  border-radius: 5px;
+  outline: none;
+  /* box-shadow: 0 0 0 0 transparent; */
+  /* transition: box-shadow 0.3s ease-in-out; */
+}
+.cp__palette-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  font-size: 1.2em;
+  font-family: system-ui;
+  padding: 0.5em;
+  border-radius: 5px;
+  outline: none;
+  box-shadow: 0 0 0 0 transparent;
+  transition: box-shadow 0.3s ease-in-out;
+}
+.searchItem {
+  color: #ffffff;
+}

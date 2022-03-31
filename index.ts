@@ -1,5 +1,5 @@
 import '@logseq/libs';
-import { SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin';
+import { PageEntity, BlockEntity, SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin';
 import { getBlocksInPage } from './utils';
 
 let settings: SettingSchemaDesc[] = [

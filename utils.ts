@@ -1,97 +1,76 @@
 import '@logseq/libs'
+import { PageEntity, BlockEntity, SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin';
 export var blocks2 = []
-export function getBlocksInPage() {
-    logseq.Editor.getCurrentPageBlocksTree().then((block) => {
-        console.log(block)
-        for (const x in block) {
-            parseBlocksTree(block[x]);
+
+export async function getBlocksInPage() {
+// async function createExport2() {
+    let txt = ""
+    const curPage = await logseq.Editor.getCurrentPage()
+    const docTree = await logseq.Editor.getCurrentPageBlocksTree()
+    
+//page meta-data
+    let finalString = `---\ntitle: \"${curPage.originalName}\"`
+    for (const prop in curPage.properties) {
+        const pvalue = curPage.properties[prop]
+        finalString = `${finalString}\n${prop}:`
+        //FIXME ugly
+        if ( Array.isArray(pvalue) ) { 
+            for (const key in pvalue) finalString=`${finalString}\n- ${pvalue[key]}`
+        } else { 
+            if ( pvalue in ["category", "tags" ] ) txt = "\n-"
+            finalString=`${finalString}${txt} ${pvalue}` 
         }
+    } 
+    finalString = `${finalString}\n---`
 
-    })
-    createExport();
-}
+// parse page-content
+    finalString = await parsePage(finalString, docTree)
 
-async function createExport() {
-    var finalString = `# ${(await logseq.Editor.getCurrentPage()).originalName}`;
-    // var finalString = ``;
-
-    for (const x in blocks2) {
-        var formattedText = await formatText(blocks2[x][0], x);
-        finalString = `${finalString}\n${formattedText}`;
-    }
-
-    finalString = finalString.replaceAll("#+BEGIN_QUOTE", "");
-    finalString = finalString.replaceAll("#+END_QUOTE", "");
-    console.log(finalString)
-    download(`${(await logseq.Editor.getCurrentPage()).originalName}.orig`, finalString);
-}
-
-function download(filename, text) {
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
-
-    element.style.display = 'none';
-    document.body.appendChild(element);
-
-    element.click();
-
-    document.body.removeChild(element);
+    // finalString = finalString.replaceAll("#+BEGIN_QUOTE", "");
+    // finalString = finalString.replaceAll("#+END_QUOTE", "");
+    download(`${curPage.originalName}.md`, finalString);
 }
 
 
-export function parseBlocksTree(obj) {
-    conductParsing(obj);
-    function conductParsing(obj) {
-        if (obj.content) {
-            let content2 = obj.content
-            let level = obj.level;
-            blocks2.push([content2, level]);
+async function parsePage(finalString:string, docTree) {
+    for (const x in docTree) { 
+        // skip meta-data
+        if ( ! (parseInt(x) === 0 && docTree[x].level === 1) ) {
+            // console.log("aq5",docTree[x].content)
+            finalString = `${finalString}\n${await parseText(docTree[x])}`;  
+            if (docTree[x].children.length > 0) finalString = await parsePage(finalString, docTree[x].children)
+            // console.log("aq5.5",finalString)      
         }
-        obj.children.map(conductParsing);
     }
+    // console.log("aq6",finalString)
+    return finalString
 }
 
 
+async function parseText(block:BlockEntity) {
+    let text = block.content
+    console.log("block",block)
+    let txtBefore:string = ""
+    let txtAfter:string  = "\n"
+    const prevBlock:BlockEntity = await logseq.Editor.getBlock(block.left.id, {includeChildren: false})
+    console.log("prevBlock",prevBlock)
 
-export async function formatText(text2, number) {
-    var text: string = text2.replace(/:LOGBOOK:|collapsed:: true/gi, "");
-    if (text.includes("CLOCK: [")) {
-        text = text.substring(0, text.indexOf("CLOCK: ["));
+    //add ?
+    if ( block.level > 1 ) {
+        txtBefore = " ".repeat((block.level -1) * 2) + "+ " 
+        // txtBefore = "\n" + txtBefore
+        if ( prevBlock.level === block.level ) txtAfter = ""
     }
+    //exceptions
+    if ( text.substring(0,3) === "```" ) txtBefore = ""
+    //indent text + add newline after block
+    text = txtBefore + text + txtAfter
 
-    // if (logseq.settings[`${template}Options`].includes("Hide Page Properties")) {
-    if (number == 0) {
-        let count = 0
-        //every second match should be inserted as "\n - (match). Else, it should insert (match:) "
-        text = text.replaceAll(/((?<=::).*|.*::)/g, (match) => {
-            count++;
-            if (count % 2 == 0) {
-                //if the value  of "match", split with , is greater than 1, then for each value, insert  "\n - (match) else simply insert match 
-                if (match.split(",").length > 1) {
-                    let finalString = "";
-                    match.split(",").map(x => {
-                        finalString = `${finalString}\n - ${x}`;
-                    })
-                    console.log(finalString)
-                    return finalString.replaceAll("::", ":");
-                }
-                else {
-                    return ` ${match}`;
-                }
-            } else {
-                console.log(match)
-                return match.replaceAll("::", ":");
-            }
-        });
-        /// Add --- above and below the text
-        text = `---\n${text}\n---`;
-    }
-
-    //conversion of links to hugo syntax
+    //conversion of links to hugo syntax https://gohugo.io/content-management/cross-references/
     if (logseq.settings.linkFormat == "Hugo Format") {
         text = text.replaceAll(/\[\[.*\]\]/g, (match) => {
-            return `[${match.substring(2, match.length - 2)}]({{${match.substring(2, match.length - 2).replaceAll(" ", "_")}}}`
+            const txt = match.substring(2, match.length - 2)
+            return `[${txt}]({{< ref ${txt.replaceAll(" ", "_")} >}})`
         })
     }
     if  (logseq.settings.linkFormat == "Without brackets") {
@@ -99,11 +78,19 @@ export async function formatText(text2, number) {
         text = text.replaceAll("]]", "")
     }
 
-    //convert code blocks and replace every second match with a newline at start
-    let count = 0;
-    text = text.replaceAll(/(?<!`)`(?!`)/g, (match) => { count += 1; return count % 2 == 0 ? "\n```" : "```\n" })
 
+    
+    console.log("txt", text)
+    return text
+} 
 
+//import into parseText
+export async function formatText(text2, number) {
+    // console.log("formatText:", text2, number)
+    var text: string = text2.replace(/:LOGBOOK:|collapsed:: true/gi, "");
+    if (text.includes("CLOCK: [")) {
+        text = text.substring(0, text.indexOf("CLOCK: ["));
+    }
 
     const rxGetId = /\(\(([^)]*)\)\)/;
     const blockId = rxGetId.exec(text);
@@ -127,8 +114,22 @@ export async function formatText(text2, number) {
     }
 }
 
+//FIXME don't get it, but it works
+function download(filename, text) {
+    // console.log("DB:download", filename, text)
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+}
   //Conversions to be handled
-  //1. Convert page properties
-  //2. Remove bullets and indentation
-  //3. Translate links from [[Logseq export]] should be translated as `[Logseq export]({{< ref "Logseq_export" >}})`
+  //1. DONE Convert page properties 
+  //2. Remove bullets and indentation ???? in progress
+  //3. DONE Translate links from [[Logseq export]] should be translated as `[Logseq export]({{< ref "Logseq_export" >}})`
   //4. Convert to .orig file

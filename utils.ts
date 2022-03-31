@@ -28,7 +28,7 @@ export async function getBlocksInPage() {
 
     // finalString = finalString.replaceAll("#+BEGIN_QUOTE", "");
     // finalString = finalString.replaceAll("#+END_QUOTE", "");
-    download(`${curPage.originalName}.md`, finalString);
+    download(`${curPage.originalName}.orig`, finalString);
 }
 
 

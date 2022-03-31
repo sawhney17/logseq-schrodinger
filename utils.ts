@@ -123,29 +123,10 @@ async function parseText(block: BlockEntity) {
     re = /==(.*?)==/g;
     text = text.replace(re, '{{< logseq/lshighlight >}}$1{{< / logseq/lshighlight >}}');
 
-    re = /#\+BEGIN_NOTE.*\n(.*)\n#\+END_NOTE/gm;
-    text = text.replace(re, '{{< logseq/orgnote >}}$1{{< / logseq/orgnote >}}');
-
-    re = /#\+BEGIN_CAUTION.*\n(.*)\n#\+END_CAUTION/gm;
-    text = text.replace(re, '{{< logseq/orgcaution >}}$1{{< / logseq/orgcaution >}}');
-
-    re = /#\+BEGIN_TIP.*\n(.*)\n#\+END_TIP/gm;
-    text = text.replace(re, '{{< logseq/orgtip >}}$1{{< / logseq/orgtip >}}');
-
-    re = /#\+BEGIN_IMPORTANT.*\n(.*)\n#\+END_IMPORTANT/gm;
-    text = text.replace(re, '{{< logseq/orgimportant >}}$1{{< / logseq/orgimportant >}}');
-
-    re = /#\+BEGIN_EXAMPLE.*\n(.*)\n#\+END_EXAMPLE/gm;
-    text = text.replace(re, '{{< logseq/orgexample >}}$1{{< / logseq/orgexample >}}');
-
-    re = /#\+BEGIN_PIN.*\n(.*)\n#\+END_PIN/gm;
-    text = text.replace(re, '{{< logseq/orgpin >}}$1{{< / logseq/orgpin >}}');
-
-    re = /#\+BEGIN_CAREFUL.*\n(.*)\n#\+END_CAREFUL/gm;
-    text = text.replace(re, '{{< logseq/orgcareful >}}$1{{< / logseq/orgcareful >}}');
-
-    re = /#\+BEGIN_WARNING.*\n(.*)\n#\+END_WARNING/gm;
-    text = text.replace(re, '{{< logseq/orgwarning >}}$1{{< / logseq/orgwarning >}}');
+    //No protection against wrong code!
+    re = /#\+BEGIN_([A-Z]*).*\n(.*)\n#\+END_.*/gm;
+    text = text.replace(re, '{{< logseq/org$1 >}}$2{{< / logseq/org$1 >}}');
+    text = text.toLowerCase()
 
     text = text.replace(/:LOGBOOK:|collapsed:: true/gi, "");
     if (text.includes("CLOCK: [")) {

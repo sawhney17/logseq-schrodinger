@@ -118,22 +118,14 @@ async function parseText(block: BlockEntity) {
         text = text.replaceAll("]]", "")
     }
 
-
-
-    // console.log("txt", text)
-    return text
-}
-
-//import into parseText
-export async function formatText(text2, number) {
-    // console.log("formatText:", text2, number)
-    var text: string = text2.replace(/:LOGBOOK:|collapsed:: true/gi, "");
+    text = text.replace(/:LOGBOOK:|collapsed:: true/gi, "");
     if (text.includes("CLOCK: [")) {
         text = text.substring(0, text.indexOf("CLOCK: ["));
     }
 
     const rxGetId = /\(\(([^)]*)\)\)/;
     const blockId = rxGetId.exec(text);
+    console.log(blockId)
     if (blockId != null) {
         const block = await logseq.Editor.getBlock(blockId[1], {
             includeChildren: true,

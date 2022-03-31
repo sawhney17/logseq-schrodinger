@@ -117,3 +117,4 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 package-lock.json
+yarn.lock

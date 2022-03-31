@@ -34,14 +34,15 @@ export async function getBlocksInPage(e, singleFile, isLast) {
     //page meta-data
     let finalString = `---\ntitle: \"${curPage.originalName}\"`
     for (const prop in curPage.properties) {
-        const pvalue = curPage.properties[prop]
+        const pvalue = curPage.properties[prop].toLowerCase
         finalString = `${finalString}\n${prop}:`
         //FIXME ugly
-        if (Array.isArray(pvalue)) {
-            for (const key in pvalue) finalString = `${finalString}\n- ${pvalue[key]}`
-        } else {
-            if (pvalue in ["category", "tags"]) txt = "\n-"
-            finalString = `${finalString}${txt} ${pvalue}`
+        if ( Array.isArray(pvalue) ) { 
+            for (const key in pvalue) finalString=`${finalString}\n- ${pvalue[key].replaceAll("[[", "")}`
+        } else { 
+            if ( pvalue === "category" ) pvalue = "categories"
+            if ( pvalue in ["categories", "tags" ] ) txt = "\n-"
+            finalString=`${finalString}${txt} ${pvalue}` 
         }
     }
     finalString = `${finalString}\n---`

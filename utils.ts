@@ -108,7 +108,7 @@ async function parseText(block: BlockEntity) {
 
     //conversion of links to hugo syntax https://gohugo.io/content-management/cross-references/
     if (logseq.settings.linkFormat == "Hugo Format") {
-        text = text.replaceAll(/\[\[.*\]\]/g, (match) => {
+        text = text.replaceAll(/\[\[.*?\]\]/g, (match) => {
             const txt = match.substring(2, match.length - 2)
             return `[${txt}]({{< ref ${txt.replaceAll(" ", "_")} >}})`
         })

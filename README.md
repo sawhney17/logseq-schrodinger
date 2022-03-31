@@ -1,4 +1,6 @@
 # Logseq Hugo Export Plugin
+>If a note isn't  exported, does it really exist?
+
 A utility to export a logseq page into the hugo format
 
 ## Instructions

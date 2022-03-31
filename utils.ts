@@ -1,43 +1,82 @@
 import '@logseq/libs'
 import { PageEntity, BlockEntity, SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 export var blocks2 = []
 
-export async function getBlocksInPage() {
-// async function createExport2() {
+var zip = new JSZip();
+export async function getAllPublicPages() {
+    logseq.DB.q("(page-property public)").then((result) => {
+        const mappedResults = result.map((page) => { return page.name })
+        console.log(mappedResults)
+        for (const x in mappedResults) {
+            console.log(x)
+            console.log(mappedResults.length)
+            if (x != `${mappedResults.length-1}`){
+            getBlocksInPage({ "page": mappedResults[x] }, false, false)
+            }
+            else{
+                getBlocksInPage({ "page": mappedResults[x] }, false, true)
+            }
+        }
+
+    })
+}
+export async function getBlocksInPage(e, singleFile, isLast) {
+    // async function createExport2() {
+    console.log
     let txt = ""
-    const curPage = await logseq.Editor.getCurrentPage()
-    const docTree = await logseq.Editor.getCurrentPageBlocksTree()
-    
-//page meta-data
+    const curPage = await logseq.Editor.getPage(e.page)
+    console.log(curPage)
+    const docTree = await logseq.Editor.getPageBlocksTree(curPage.originalName)
+    console.log("docTree", docTree)
+
+    //page meta-data
     let finalString = `---\ntitle: \"${curPage.originalName}\"`
     for (const prop in curPage.properties) {
         const pvalue = curPage.properties[prop]
         finalString = `${finalString}\n${prop}:`
         //FIXME ugly
-        if ( Array.isArray(pvalue) ) { 
-            for (const key in pvalue) finalString=`${finalString}\n- ${pvalue[key]}`
-        } else { 
-            if ( pvalue in ["category", "tags" ] ) txt = "\n-"
-            finalString=`${finalString}${txt} ${pvalue}` 
+        if (Array.isArray(pvalue)) {
+            for (const key in pvalue) finalString = `${finalString}\n- ${pvalue[key]}`
+        } else {
+            if (pvalue in ["category", "tags"]) txt = "\n-"
+            finalString = `${finalString}${txt} ${pvalue}`
         }
-    } 
+    }
     finalString = `${finalString}\n---`
 
-// parse page-content
+    // parse page-content
     finalString = await parsePage(finalString, docTree)
 
     // finalString = finalString.replaceAll("#+BEGIN_QUOTE", "");
     // finalString = finalString.replaceAll("#+END_QUOTE", "");
-    download(`${curPage.originalName}.orig`, finalString);
+    if (singleFile) {
+        download(`${curPage.originalName}.md`, finalString);
+    }
+    else {
+        zip.file(`${curPage.originalName}.md`, finalString);
+        console.log("HI")
+        console.log(isLast)
+        if (isLast){
+            console.log(zip)
+            zip.generateAsync({ type: "blob" })
+            .then(function (content) {
+                // see FileSaver.js
+                saveAs(content, "publicExport.zip");
+                zip = new JSZip()
+            });
+        }
+    }
 }
 
 
-async function parsePage(finalString:string, docTree) {
-    for (const x in docTree) { 
+async function parsePage(finalString: string, docTree) {
+    for (const x in docTree) {
         // skip meta-data
-        if ( ! (parseInt(x) === 0 && docTree[x].level === 1) ) {
+        if (!(parseInt(x) === 0 && docTree[x].level === 1)) {
             // console.log("aq5",docTree[x].content)
-            finalString = `${finalString}\n${await parseText(docTree[x])}`;  
+            finalString = `${finalString}\n${await parseText(docTree[x])}`;
             if (docTree[x].children.length > 0) finalString = await parsePage(finalString, docTree[x].children)
             // console.log("aq5.5",finalString)      
         }
@@ -47,22 +86,22 @@ async function parsePage(finalString:string, docTree) {
 }
 
 
-async function parseText(block:BlockEntity) {
+async function parseText(block: BlockEntity) {
     let text = block.content
-    console.log("block",block)
-    let txtBefore:string = ""
-    let txtAfter:string  = "\n"
-    const prevBlock:BlockEntity = await logseq.Editor.getBlock(block.left.id, {includeChildren: false})
-    console.log("prevBlock",prevBlock)
+    // console.log("block", block)
+    let txtBefore: string = ""
+    let txtAfter: string = "\n"
+    const prevBlock: BlockEntity = await logseq.Editor.getBlock(block.left.id, { includeChildren: false })
+    // console.log("prevBlock", prevBlock)
 
     //add ?
-    if ( block.level > 1 ) {
-        txtBefore = " ".repeat((block.level -1) * 2) + "+ " 
+    if (block.level > 1) {
+        txtBefore = " ".repeat((block.level - 1) * 2) + "+ "
         // txtBefore = "\n" + txtBefore
-        if ( prevBlock.level === block.level ) txtAfter = ""
+        if (prevBlock.level === block.level) txtAfter = ""
     }
     //exceptions
-    if ( text.substring(0,3) === "```" ) txtBefore = ""
+    if (text.substring(0, 3) === "```") txtBefore = ""
     //indent text + add newline after block
     text = txtBefore + text + txtAfter
 
@@ -73,16 +112,16 @@ async function parseText(block:BlockEntity) {
             return `[${txt}]({{< ref ${txt.replaceAll(" ", "_")} >}})`
         })
     }
-    if  (logseq.settings.linkFormat == "Without brackets") {
+    if (logseq.settings.linkFormat == "Without brackets") {
         text = text.replaceAll("[[", "")
         text = text.replaceAll("]]", "")
     }
 
 
-    
-    console.log("txt", text)
+
+    // console.log("txt", text)
     return text
-} 
+}
 
 //import into parseText
 export async function formatText(text2, number) {
@@ -129,7 +168,7 @@ function download(filename, text) {
     document.body.removeChild(element);
 }
   //Conversions to be handled
-  //1. DONE Convert page properties 
+  //1. DONE Convert page properties
   //2. Remove bullets and indentation ???? in progress
   //3. DONE Translate links from [[Logseq export]] should be translated as `[Logseq export]({{< ref "Logseq_export" >}})`
   //4. Convert to .orig file

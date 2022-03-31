@@ -1,6 +1,6 @@
 import '@logseq/libs';
 import { PageEntity, BlockEntity, SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin';
-import { getBlocksInPage } from './utils';
+import { getAllPublicPages, getBlocksInPage } from './utils';
 
 let settings: SettingSchemaDesc[] = [
   {
@@ -15,7 +15,8 @@ let settings: SettingSchemaDesc[] = [
 ]
 const main = async () => {
   console.log('plugin loaded');
-  logseq.App.registerPageMenuItem("Export page to hugo", getBlocksInPage);
+  logseq.App.registerPageMenuItem("Export page to hugo", (e)=>{getBlocksInPage(e, true, false)});
+  logseq.App.registerPageMenuItem("Export all public pages to hugo", getAllPublicPages);
   logseq.useSettingsSchema(settings)
 }
 

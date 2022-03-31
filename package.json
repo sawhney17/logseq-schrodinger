@@ -14,7 +14,9 @@
   "author": "Aryan Sawhney",
   "license": "MIT",
   "dependencies": {
-    "@logseq/libs": "0.0.1-alpha.35"
+    "@logseq/libs": "0.0.1-alpha.35",
+    "file-saver": "^2.0.5",
+    "jszip": "^3.8.0"
   },
   "logseq": {
     "id": "logseq-hugo-plugin",
@@ -22,6 +24,7 @@
     "icon": "./icon.jpeg"
   },
   "devDependencies": {
+    "buffer": "^6.0.3",
     "parcel": "^2.0.0"
   }
 }

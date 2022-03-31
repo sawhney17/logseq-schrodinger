@@ -88,6 +88,7 @@ async function parsePage(finalString: string, docTree) {
 
 
 async function parseText(block: BlockEntity) {
+    let re:RegExp
     let text = block.content
     // console.log("block", block)
     let txtBefore: string = ""
@@ -95,13 +96,14 @@ async function parseText(block: BlockEntity) {
     const prevBlock: BlockEntity = await logseq.Editor.getBlock(block.left.id, { includeChildren: false })
     // console.log("prevBlock", prevBlock)
 
-    //add ?
+    // Add indention — level zero is stripped of "-", rest are lists
+    // (unless they're not)
     if (block.level > 1) {
         txtBefore = " ".repeat((block.level - 1) * 2) + "+ "
         // txtBefore = "\n" + txtBefore
         if (prevBlock.level === block.level) txtAfter = ""
     }
-    //exceptions
+    //exceptions (logseq has "-" before every block, Hugo doesn't)
     if (text.substring(0, 3) === "```") txtBefore = ""
     //indent text + add newline after block
     text = txtBefore + text + txtAfter
@@ -117,6 +119,33 @@ async function parseText(block: BlockEntity) {
         text = text.replaceAll("[[", "")
         text = text.replaceAll("]]", "")
     }
+
+    re = /==(.*?)==/g;
+    text = text.replace(re, '{{< logseq/lshighlight >}}$1{{< / logseq/lshighlight >}}');
+
+    re = /#\+BEGIN_NOTE.*\n(.*)\n#\+END_NOTE/gm;
+    text = text.replace(re, '{{< logseq/orgnote >}}$1{{< / logseq/orgnote >}}');
+
+    re = /#\+BEGIN_CAUTION.*\n(.*)\n#\+END_CAUTION/gm;
+    text = text.replace(re, '{{< logseq/orgcaution >}}$1{{< / logseq/orgcaution >}}');
+
+    re = /#\+BEGIN_TIP.*\n(.*)\n#\+END_TIP/gm;
+    text = text.replace(re, '{{< logseq/orgtip >}}$1{{< / logseq/orgtip >}}');
+
+    re = /#\+BEGIN_IMPORTANT.*\n(.*)\n#\+END_IMPORTANT/gm;
+    text = text.replace(re, '{{< logseq/orgimportant >}}$1{{< / logseq/orgimportant >}}');
+
+    re = /#\+BEGIN_EXAMPLE.*\n(.*)\n#\+END_EXAMPLE/gm;
+    text = text.replace(re, '{{< logseq/orgexample >}}$1{{< / logseq/orgexample >}}');
+
+    re = /#\+BEGIN_PIN.*\n(.*)\n#\+END_PIN/gm;
+    text = text.replace(re, '{{< logseq/orgpin >}}$1{{< / logseq/orgpin >}}');
+
+    re = /#\+BEGIN_CAREFUL.*\n(.*)\n#\+END_CAREFUL/gm;
+    text = text.replace(re, '{{< logseq/orgcareful >}}$1{{< / logseq/orgcareful >}}');
+
+    re = /#\+BEGIN_WARNING.*\n(.*)\n#\+END_WARNING/gm;
+    text = text.replace(re, '{{< logseq/orgwarning >}}$1{{< / logseq/orgwarning >}}');
 
     text = text.replace(/:LOGBOOK:|collapsed:: true/gi, "");
     if (text.includes("CLOCK: [")) {

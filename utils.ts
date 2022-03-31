@@ -34,14 +34,23 @@ export async function getBlocksInPage(e, singleFile, isLast) {
     //page meta-data
     let finalString = `---\ntitle: \"${curPage.originalName}\"`
     for (const prop in curPage.properties) {
-        const pvalue = curPage.properties[prop]
+        const pvalue = curPage.properties[prop].toLowerCase
         finalString = `${finalString}\n${prop}:`
         //FIXME ugly
+<<<<<<< Updated upstream
         if (Array.isArray(pvalue)) {
             for (const key in pvalue) finalString = `${finalString}\n- ${pvalue[key]}`
         } else {
             if (pvalue in ["category", "tags"]) txt = "\n-"
             finalString = `${finalString}${txt} ${pvalue}`
+=======
+        if ( Array.isArray(pvalue) ) { 
+            for (const key in pvalue) finalString=`${finalString}\n- ${pvalue[key].replaceAll("[[", "")}`
+        } else { 
+            if ( pvalue === "category" ) pvalue = "categories"
+            if ( pvalue in ["categories", "tags" ] ) txt = "\n-"
+            finalString=`${finalString}${txt} ${pvalue}` 
+>>>>>>> Stashed changes
         }
     }
     finalString = `${finalString}\n---`
@@ -51,6 +60,7 @@ export async function getBlocksInPage(e, singleFile, isLast) {
 
     // finalString = finalString.replaceAll("#+BEGIN_QUOTE", "");
     // finalString = finalString.replaceAll("#+END_QUOTE", "");
+<<<<<<< Updated upstream
     if (singleFile) {
         download(`${curPage.originalName}.md`, finalString);
     }
@@ -68,6 +78,9 @@ export async function getBlocksInPage(e, singleFile, isLast) {
             });
         }
     }
+=======
+    download(`${curPage.originalName}.md`, finalString);
+>>>>>>> Stashed changes
 }
 
 

@@ -4,7 +4,7 @@ export var blocks2 = []
 
 export async function getBlocksInPage() {
 // async function createExport2() {
-    let txt:str = ""
+    let txt = ""
     const curPage = await logseq.Editor.getCurrentPage()
     const docTree = await logseq.Editor.getCurrentPageBlocksTree()
     
@@ -42,7 +42,7 @@ async function parsePage(finalString:string, docTree) {
             // console.log("aq5.5",finalString)      
         }
     }
-    console.log("aq6",finalString)
+    // console.log("aq6",finalString)
     return finalString
 }
 
@@ -51,14 +51,15 @@ async function parseText(block:BlockEntity) {
     let text = block.content
     console.log("block",block)
     let txtBefore:string = ""
-    let txtAfter:string  = ""
+    let txtAfter:string  = "\n"
     const prevBlock:BlockEntity = await logseq.Editor.getBlock(block.left.id, {includeChildren: false})
     console.log("prevBlock",prevBlock)
 
     //add ?
     if ( block.level > 1 ) {
-        txtBefore = " ".repeat((block.level -1) * 2) + "+"
-        txtBefore = "\n" + txtBefore
+        txtBefore = " ".repeat((block.level -1) * 2) + "+ " 
+        // txtBefore = "\n" + txtBefore
+        if ( prevBlock.level === block.level ) txtAfter = ""
     }
     //exceptions
     if ( text.substring(0,3) === "```" ) txtBefore = ""
@@ -69,7 +70,7 @@ async function parseText(block:BlockEntity) {
     if (logseq.settings.linkFormat == "Hugo Format") {
         text = text.replaceAll(/\[\[.*\]\]/g, (match) => {
             const txt = match.substring(2, match.length - 2)
-            return `[${txt}]({{< ref ${txt.replaceAll(" ", "_")} >}}`
+            return `[${txt}]({{< ref ${txt.replaceAll(" ", "_")} >}})`
         })
     }
     if  (logseq.settings.linkFormat == "Without brackets") {

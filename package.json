@@ -16,7 +16,9 @@
   "dependencies": {
     "@logseq/libs": "0.0.1-alpha.35",
     "file-saver": "^2.0.5",
-    "jszip": "^3.8.0"
+    "jszip": "^3.8.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   },
   "logseq": {
     "id": "logseq-hugo-plugin",

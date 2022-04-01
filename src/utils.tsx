@@ -115,7 +115,7 @@ async function parseText(block: BlockEntity) {
   try {
     text.match(/!\[.*?\]\((.*?)\)/g).forEach((element) => {
       element.match(/(?<=!\[.*\])(.*)/g).forEach((match) => {
-        let finalLink = match.substring(1, match.length - 1);
+        let finalLink = match.substring(1, match.length - 1).split;
         // return (match.substring(1, match.length - 1))
         imageTracker.push(finalLink);
         addImageToZip(finalLink);
@@ -201,13 +201,11 @@ function addImageToZip(filePath) {
   element.setAttribute("src", formattedFilePath);
   element.style.display = "none";
   document.body.appendChild(element);
-  setTimeout(() => {
+  // setTimeout(() => {
   var base64 = getBase64Image(element);
   document.body.removeChild(element);
-  zip.file(filePath.replace("../", ""), base64, { base64: true });
-  }, 100)
-  
-  
+  zip.file(filePath.split("/")[-1], base64, { base64: true });
+  // }, 100)
   
 }
 

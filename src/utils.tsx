@@ -39,7 +39,7 @@ export async function getBlocksInPage(e, singleFile, isLast) {
   //page meta-data
   let finalString = `---\ntitle: \"${curPage.originalName}\"`;
   for (const prop in curPage.properties) {
-    const pvalue = curPage.properties[prop];
+    let pvalue = curPage.properties[prop];
     finalString = `${finalString}\n${prop}:`;
     //FIXME ugly
     if (Array.isArray(pvalue)) {
@@ -59,15 +59,9 @@ export async function getBlocksInPage(e, singleFile, isLast) {
   if (errorTracker.length > 0) {
   }
   if (singleFile) {
-    ReactDOM.render(
-      //Render react component
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>,
-      document.getElementById("app")
-    );
-    logseq.showMainUI();
+    logseq.hideMainUI();
     handleClosePopup();
+
     download(`${curPage.originalName}.md`, finalString);
   } else {
     zip.file(`${curPage.originalName}.md`, finalString);

@@ -53,6 +53,7 @@ html {
   font-size: larger;
 }
 .smartblock-inserter {
+  background-color: var(--cl-darkjungle);
   padding: 1em;
   /* background: rgb(40, 157, 165);  */
   z-index: 9;
@@ -63,7 +64,7 @@ html {
   transform: translate(0, 100px);
   flex-direction: column;
   color: #ffffff;
-  align-items: center;
+  /* align-items: center; */
   background-color: var(--cl-darkjungle) !important;
   border-top: 1px solid var(--cl-charcoal);
   border-right: 1px solid var(--cl-charcoal);
@@ -93,4 +94,7 @@ html {
 }
 .searchItem {
   color: #ffffff;
+}
+.full-width {
+  width: 100%;
 }

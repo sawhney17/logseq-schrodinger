@@ -40,7 +40,7 @@ export async function getBlocksInPage(e, singleFile, isLast) {
   //page meta-data
   let finalString = `---\ntitle: \"${curPage.originalName}\"`;
   for (const prop in curPage.properties) {
-    const pvalue = curPage.properties[prop].toLowerCase;
+    const pvalue = curPage.properties[prop];
     finalString = `${finalString}\n${prop}:`;
     //FIXME ugly
     if (Array.isArray(pvalue)) {
@@ -57,8 +57,6 @@ export async function getBlocksInPage(e, singleFile, isLast) {
   // parse page-content
   finalString = await parsePage(finalString, docTree);
 
-  // finalString = finalString.replaceAll("#+BEGIN_QUOTE", "");
-  // finalString = finalString.replaceAll("#+END_QUOTE", "");
   if (errorTracker.length > 0) {
   }
   if (singleFile) {

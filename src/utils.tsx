@@ -204,7 +204,6 @@ function addImageToZip(filePath) {
   setTimeout(() => {
   var base64 = getBase64Image(element);
   document.body.removeChild(element);
-  console.log(base64);
   zip.file(filePath.replace("../", ""), base64, { base64: true });
   }, 100)
   

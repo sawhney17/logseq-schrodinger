@@ -80,7 +80,7 @@ export async function getBlocksInPage(e, singleFile, isLast) {
           saveAs(content, "publicExport.zip");
           zip = new JSZip();
         });
-      }, 1000);
+      }, 5000);
     }
   }
 }

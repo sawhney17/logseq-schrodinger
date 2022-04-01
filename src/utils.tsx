@@ -12,7 +12,6 @@ import ReactDOM from "react-dom";
 import App from "./App";
 import { handleClosePopup } from "./handleClosePopup";
 import { path } from "./index";
-let lastPerf;
 var errorTracker = [];
 var zip = new JSZip();
 var imageTracker = [];
@@ -76,7 +75,6 @@ export async function getBlocksInPage(e, singleFile, isLast) {
     if (isLast) {
       setTimeout(() => {
         console.log(zip);
-        console.log(lastPerf - performance.now());
         zip.generateAsync({ type: "blob" }).then(function (content) {
           // see FileSaver.js
           saveAs(content, "publicExport.zip");
@@ -111,7 +109,6 @@ async function parseText(block: BlockEntity) {
   const prevBlock: BlockEntity = await logseq.Editor.getBlock(block.left.id, {
     includeChildren: false,
   });
-  // console.log("prevBlock", prevBlock)
 
   //Get regex to check if text contains a md image
   try {
@@ -119,8 +116,11 @@ async function parseText(block: BlockEntity) {
       element.match(/(?<=!\[.*\])(.*)/g).forEach((match) => {
         let finalLink = match.substring(1, match.length - 1);
         // return (match.substring(1, match.length - 1))
+        if (!finalLink.includes("http")) {
+          text = text.replace("../", "/")
         imageTracker.push(finalLink);
         addImageToZip(finalLink);
+        }
       });
     });
   } catch (error) {}
@@ -193,25 +193,20 @@ function getBase64Image(img) {
   ctx.drawImage(img, 0, 0);
   var dataURL = canvas.toDataURL("image/png");
   return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+  
 }
 
 function addImageToZip(filePath) {
-  const t0 = performance.now();
-  console.log("addImageToZip");
-  console.log(filePath);
   var element = document.createElement("img");
-  console.log(filePath);
   let formattedFilePath = filePath.replace("..", path);
   element.setAttribute("src", formattedFilePath);
   element.style.display = "none";
-  console.log(filePath);
 
   document.body.appendChild(element);
   setTimeout(() => {
     var base64 = getBase64Image(element);
     document.body.removeChild(element);
-    console.log(performance.now());
-    zip.file(filePath.split("/")[filePath.split("/").length], base64, { base64: true });
+    zip.file("assets/"+filePath.split("/")[filePath.split("/").length - 1], base64, { base64: true });
   }, 50);
 }
 

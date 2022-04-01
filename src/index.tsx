@@ -2,7 +2,7 @@ import '@logseq/libs';
 import { PageEntity, BlockEntity, SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin';
 import { getAllPublicPages, getBlocksInPage } from './utils';
 
-
+export var path = "";
 let settings: SettingSchemaDesc[] = [
   {
     key: "linkFormat",
@@ -19,6 +19,7 @@ const main = async () => {
   logseq.App.registerPageMenuItem("Export page to hugo", (e)=>{getBlocksInPage(e, true, false)});
   logseq.App.registerPageMenuItem("Export all public pages to hugo", getAllPublicPages);
   logseq.useSettingsSchema(settings)
+  path = (await logseq.App.getCurrentGraph()).path
 }
 
 logseq.ready(main).catch(console.error);

@@ -116,8 +116,10 @@ async function parseText(block: BlockEntity) {
       element.match(/(?<=!\[.*\])(.*)/g).forEach((match) => {
         let finalLink = match.substring(1, match.length - 1);
         // return (match.substring(1, match.length - 1))
+        text = text.replace(match, match.toLowerCase())
         if (!finalLink.includes("http")) {
           text = text.replace("../", "/")
+          
         imageTracker.push(finalLink);
         addImageToZip(finalLink);
         }
@@ -206,7 +208,7 @@ function addImageToZip(filePath) {
   setTimeout(() => {
     var base64 = getBase64Image(element);
     document.body.removeChild(element);
-    zip.file("assets/"+filePath.split("/")[filePath.split("/").length - 1], base64, { base64: true });
+    zip.file("assets/"+filePath.split("/")[filePath.split("/").length - 1].toLowerCase(), base64, { base64: true });
   }, 50);
 }
 

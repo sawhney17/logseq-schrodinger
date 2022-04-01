@@ -14,7 +14,6 @@ import { handleClosePopup } from "./handleClosePopup";
 import { path } from "./index";
 var errorTracker = [];
 var zip = new JSZip();
-var image = zip.folder("assets")
 var imageTracker = [];
 export async function getAllPublicPages() {
   errorTracker = [];
@@ -207,7 +206,7 @@ function addImageToZip(filePath) {
   var base64 = getBase64Image(element);
   document.body.removeChild(element);
   console.log(base64);
-  image.file(filePath.replace("../assets/", ""), base64, { base64: true });
+  zip.file(filePath.replace("../", ""), base64, { base64: true });
   }, 100)
   
   

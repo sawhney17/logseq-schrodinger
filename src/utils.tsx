@@ -12,6 +12,7 @@ import ReactDOM from "react-dom";
 import App from "./App";
 import { handleClosePopup } from "./handleClosePopup";
 import { path } from "./index";
+let lastPerf;
 var errorTracker = [];
 var zip = new JSZip();
 var imageTracker = [];
@@ -75,12 +76,13 @@ export async function getBlocksInPage(e, singleFile, isLast) {
     if (isLast) {
       setTimeout(() => {
         console.log(zip);
+        console.log(lastPerf - performance.now());
         zip.generateAsync({ type: "blob" }).then(function (content) {
           // see FileSaver.js
           saveAs(content, "publicExport.zip");
           zip = new JSZip();
         });
-      }, 5000);
+      }, imageTracker.length * 51);
     }
   }
 }
@@ -115,14 +117,13 @@ async function parseText(block: BlockEntity) {
   try {
     text.match(/!\[.*?\]\((.*?)\)/g).forEach((element) => {
       element.match(/(?<=!\[.*\])(.*)/g).forEach((match) => {
-        let finalLink = match.substring(1, match.length - 1).split;
+        let finalLink = match.substring(1, match.length - 1);
         // return (match.substring(1, match.length - 1))
         imageTracker.push(finalLink);
         addImageToZip(finalLink);
       });
     });
-  } catch(error) {
-  }
+  } catch (error) {}
   // Add indention — level zero is stripped of "-", rest are lists
   // (unless they're not)
   if (block.level > 1) {
@@ -195,18 +196,23 @@ function getBase64Image(img) {
 }
 
 function addImageToZip(filePath) {
-  console.log(filePath)
+  const t0 = performance.now();
+  console.log("addImageToZip");
+  console.log(filePath);
   var element = document.createElement("img");
-  let formattedFilePath = filePath.replace('..', path)
+  console.log(filePath);
+  let formattedFilePath = filePath.replace("..", path);
   element.setAttribute("src", formattedFilePath);
   element.style.display = "none";
+  console.log(filePath);
+
   document.body.appendChild(element);
-  // setTimeout(() => {
-  var base64 = getBase64Image(element);
-  document.body.removeChild(element);
-  zip.file(filePath.split("/")[-1], base64, { base64: true });
-  // }, 100)
-  
+  setTimeout(() => {
+    var base64 = getBase64Image(element);
+    document.body.removeChild(element);
+    console.log(performance.now());
+    zip.file(filePath.split("/")[-1], base64, { base64: true });
+  }, 50);
 }
 
 //FIXME don't get it, but it works

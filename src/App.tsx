@@ -9,18 +9,18 @@ const App: React.FC = () => {
   const [hugoFileName, setHugoFileName] = useState("");
   const [originalDate, setOriginalDate] = useState("");
   const [updatedDate, setUpdatedDate] = useState("");
-  const [mappedTagValues, setMappedTagValues] = useState([{ tag: "value" }]);
+  const [mappedtagsValues, setMappedtagsValues] = useState([{ tags: "value" }]);
 
   //create a function to handle change of inputs
-  const handleTagChange = (
+  const handletagsChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     index
   ) => {
     const { name, value } = event.target;
 
-    let targettedValues = [...mappedTagValues];
-    targettedValues[index].tag = value;
-    setMappedTagValues(targettedValues);
+    let targettedValues = [...mappedtagsValues];
+    targettedValues[index].tags = value;
+    setMappedtagsValues(targettedValues);
   };
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -35,13 +35,13 @@ const App: React.FC = () => {
     }
   };
 
-  const createNewTag = () => {
-    setMappedTagValues([...mappedTagValues, { tag: "value" }]);
+  const createNewtags = () => {
+    setMappedtagsValues([...mappedtagsValues, { tags: "value" }]);
   };
-  const deleteTag = (index: number) => {
-    let targettedValues = [...mappedTagValues];
+  const deletetags = (index: number) => {
+    let targettedValues = [...mappedtagsValues];
     targettedValues.splice(index, 1);
-    setMappedTagValues(targettedValues);
+    setMappedtagsValues(targettedValues);
   };
   return (
     <div>
@@ -91,32 +91,31 @@ const App: React.FC = () => {
                 <div className="grid justify-items-end gap-4 grid-cols-1 place-items-auto">
                   <div>
                     <div className="flex justify-between pb-2">
-                      <p className="inline-block pr-40">Tags</p>
+                      <p className="inline-block pr-40">tagss</p>
                       <div className="px-2">
                         <button
-                          onClick={createNewTag}
+                          onClick={createNewtags}
                           className="bg-white text-black font-bold p-2 rounded-sm h-max"
                         >
                           +
                         </button>
                       </div>
                     </div>
-                    {mappedTagValues.map((val, index) => {
-                      console.log(index);
-                      console.log(val);
-                      console.log(mappedTagValues);
+                    {mappedtagsValues.map((val, index) => {
                       return (
                         <div className="flex justify-between pb-2">
                           <input
                             name={index.toString()}
                             type="text"
                             className="text-black rounded-md"
-                            value={mappedTagValues[index].tag}
-                            onChange={(e) => handleTagChange(e, index)}
+                            value={mappedtagsValues[index].tags}
+                            onChange={(e) => handletagsChange(e, index)}
                           ></input>
                           <div className="px-2">
                             <button
-                              onClick={()=>{deleteTag(index)}}
+                              onClick={() => {
+                                deletetags(index);
+                              }}
                               className="bg-white text-black font-bold pr-2 rounded-sm h-max px-3"
                             >
                               -
@@ -130,10 +129,23 @@ const App: React.FC = () => {
               </div>
             </div>
             <div className="flex justify-center">
-            <button className=" border-light-300 border-2 w-3/12 hover:bg-black p-3 px-5 rounded-lg" onClick={async()=>{getBlocksInPage({"page": await (await logseq.Editor.getCurrentPage()).name}, true, true)}}>Convert</button>
+              <button
+                className=" border-light-300 border-2 w-3/12 hover:bg-black p-3 px-5 rounded-lg"
+                onClick={async () => {
+                  getBlocksInPage(
+                    { "page": await (await logseq.Editor.getCurrentPage()).name},
+                    true,
+                    true,
+                    mappedtagsValues,
+                    [{"updatedDate": updatedDate}, {"originalDate":originalDate}],
+                    [{noteName: noteName}, [{"hugoFileName" :hugoFileName}]]
+                  );
+                }}
+              >
+                Convert
+              </button>
             </div>
           </div>
-          
         </div>
       </div>
     </div>

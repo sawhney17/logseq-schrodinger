@@ -30,7 +30,14 @@ export async function getAllPublicPages() {
     }
   });
 }
-export async function getBlocksInPage(e, singleFile, isLast) {
+export async function getBlocksInPage(
+  e,
+  singleFile,
+  isLast,
+  tagsArray = [],
+  dateArray = [],
+  titleDetails = []
+) {
   // async function createExport2() {
   let txt = "";
   const curPage = await logseq.Editor.getPage(e.page);
@@ -38,13 +45,44 @@ export async function getBlocksInPage(e, singleFile, isLast) {
 
   //page meta-data
   let finalString = `---\ntitle: \"${curPage.originalName}\"`;
-  for (const prop in curPage.properties) {
-    let pvalue = curPage.properties[prop];
+  let propertiesList = curPage.properties;
+  console.log(propertiesList);
+  if (tagsArray != []) {
+    let formattedTagsArray = []
+    for (const tag in tagsArray) {
+      console.log(tag);
+      console.log(tagsArray)
+      formattedTagsArray.push(tagsArray[tag].tags);
+    }
+    if (propertiesList.tags != undefined) {
+      for (const tag in formattedTagsArray) {
+        propertiesList.tags.push(formattedTagsArray[tag]);
+      }
+    } else {
+      console.log(formattedTagsArray)
+      propertiesList.tags = formattedTagsArray;
+    }
+  }
+  if (dateArray != []) {
+    propertiesList.date = dateArray[0].originalDate;
+    propertiesList.lastMod = dateArray[0].updatedDate;
+  }
+  if (titleDetails != []) {
+    propertiesList.title = titleDetails[0].title;
+  }
+  for (const prop in propertiesList) {
+    let pvalue = propertiesList[prop];
     finalString = `${finalString}\n${prop}:`;
     //FIXME ugly
     if (Array.isArray(pvalue)) {
-      for (const key in pvalue)
+      for (const key in pvalue) {
+        console.log(key);
+
+        console.log(pvalue)
+        console.log(pvalue[key]);
+
         finalString = `${finalString}\n- ${pvalue[key].replaceAll("[[", "")}`;
+      }
     } else {
       if (pvalue === "category") pvalue = "categories";
       if (pvalue in ["categories", "tags"]) txt = "\n-";
@@ -110,12 +148,12 @@ async function parseText(block: BlockEntity) {
       element.match(/(?<=!\[.*\])(.*)/g).forEach((match) => {
         let finalLink = match.substring(1, match.length - 1);
         // return (match.substring(1, match.length - 1))
-        text = text.replace(match, match.toLowerCase())
+        text = text.replace(match, match.toLowerCase());
         if (!finalLink.includes("http")) {
-          text = text.replace("../", "/")
-          
-        imageTracker.push(finalLink);
-        addImageToZip(finalLink);
+          text = text.replace("../", "/");
+
+          imageTracker.push(finalLink);
+          addImageToZip(finalLink);
         }
       });
     });
@@ -189,7 +227,6 @@ function getBase64Image(img) {
   ctx.drawImage(img, 0, 0);
   var dataURL = canvas.toDataURL("image/png");
   return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
-  
 }
 
 function addImageToZip(filePath) {
@@ -202,7 +239,12 @@ function addImageToZip(filePath) {
   setTimeout(() => {
     var base64 = getBase64Image(element);
     document.body.removeChild(element);
-    zip.file("assets/"+filePath.split("/")[filePath.split("/").length - 1].toLowerCase(), base64, { base64: true });
+    zip.file(
+      "assets/" +
+        filePath.split("/")[filePath.split("/").length - 1].toLowerCase(),
+      base64,
+      { base64: true }
+    );
   }, 50);
 }
 

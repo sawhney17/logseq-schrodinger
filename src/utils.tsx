@@ -211,7 +211,7 @@ function addImageToZip(filePath) {
     var base64 = getBase64Image(element);
     document.body.removeChild(element);
     console.log(performance.now());
-    zip.file(filePath.split("/")[-1], base64, { base64: true });
+    zip.file(filePath.split("/")[filePath.split("/").length], base64, { base64: true });
   }, 50);
 }
 

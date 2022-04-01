@@ -122,7 +122,6 @@ async function parseText(block: BlockEntity) {
       });
     });
   } catch(error) {
-    console.log(error)
   }
   // Add indention — level zero is stripped of "-", rest are lists
   // (unless they're not)

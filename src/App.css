@@ -59,7 +59,7 @@ html {
   z-index: 9;
   border-radius: 15px;
   top: 30%;
-  width: 50%;
+  width: 60%;
   display: flex;
   transform: translate(0, 100px);
   flex-direction: column;

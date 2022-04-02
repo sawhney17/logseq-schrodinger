@@ -10,6 +10,7 @@ const App: React.FC = () => {
   const [originalDate, setOriginalDate] = useState("");
   const [updatedDate, setUpdatedDate] = useState("");
   const [mappedtagsValues, setMappedtagsValues] = useState([{ tags: "value" }]);
+  const [mappedCategoryValues, setMappedCategoryValues] = useState([{category: "value"}])
 
   //create a function to handle change of inputs
   const handletagsChange = (
@@ -21,6 +22,16 @@ const App: React.FC = () => {
     let targettedValues = [...mappedtagsValues];
     targettedValues[index].tags = value;
     setMappedtagsValues(targettedValues);
+  };
+  const handleCategoryChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    index
+  ) => {
+    const { name, value } = event.target;
+
+    let targettedValues = [...mappedCategoryValues];
+    targettedValues[index].category = value;
+    setMappedCategoryValues(targettedValues);
   };
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -43,6 +54,14 @@ const App: React.FC = () => {
     targettedValues.splice(index, 1);
     setMappedtagsValues(targettedValues);
   };
+  const createNewCategory = () => {
+    setMappedCategoryValues([...mappedCategoryValues, { category: "value" }]);
+  }
+  const deleteCategory = (index: number) => {
+    let targettedValues = [...mappedCategoryValues];
+    targettedValues.splice(index, 1);
+    setMappedCategoryValues(targettedValues);
+  }
   return (
     <div>
       <div className="overlay">
@@ -91,7 +110,7 @@ const App: React.FC = () => {
                 <div className="grid justify-items-end gap-4 grid-cols-1 place-items-auto">
                   <div>
                     <div className="flex justify-between pb-2">
-                      <p className="inline-block pr-40">tagss</p>
+                      <p className="inline-block pr-40">Tags</p>
                       <div className="px-2">
                         <button
                           onClick={createNewtags}
@@ -125,6 +144,42 @@ const App: React.FC = () => {
                       );
                     })}
                   </div>
+                  <div>
+                    <div className="flex justify-between pb-2">
+                      <p className="inline-block pr-40">tagss</p>
+                      <div className="px-2">
+                        <button
+                          onClick={createNewtags}
+                          className="bg-white text-black font-bold p-2 rounded-sm h-max"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    {mappedCategoryValues.map((val, index) => {
+                      return (
+                        <div className="flex justify-between pb-2">
+                          <input
+                            name={index.toString()}
+                            type="Categories"
+                            className="text-black rounded-md"
+                            value={mappedCategoryValues[index].category}
+                            onChange={(e) => handleCategoryChange(e, index)}
+                          ></input>
+                          <div className="px-2">
+                            <button
+                              onClick={() => {
+                                deleteCategory(index);
+                              }}
+                              className="bg-white text-black font-bold pr-2 rounded-sm h-max px-3"
+                            >
+                              -
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
@@ -137,8 +192,8 @@ const App: React.FC = () => {
                     true,
                     true,
                     mappedtagsValues,
-                    [{"updatedDate": updatedDate}, {"originalDate":originalDate}],
-                    [{noteName: noteName}, [{"hugoFileName" :hugoFileName}]]
+                    [{"updatedDate": updatedDate}, {"originalDate": originalDate}],
+                    [{"noteName": noteName}, [{"hugoFileName" :hugoFileName}], mappedCategoryValues]
                   );
                 }}
               >

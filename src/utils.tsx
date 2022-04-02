@@ -36,7 +36,8 @@ export async function getBlocksInPage(
   isLast,
   tagsArray = [],
   dateArray = [],
-  titleDetails = []
+  titleDetails = [],
+  categoriesArray = []
 ) {
   // async function createExport2() {
   let txt = "";
@@ -45,13 +46,13 @@ export async function getBlocksInPage(
 
   //page meta-data
   let finalString = `---\ntitle: \"${curPage.originalName}\"`;
-  let propertiesList = curPage.properties;
+  var propertiesList = curPage.properties;
   console.log(propertiesList);
   if (tagsArray != []) {
-    let formattedTagsArray = []
+    let formattedTagsArray = [];
     for (const tag in tagsArray) {
       console.log(tag);
-      console.log(tagsArray)
+      console.log(tagsArray);
       formattedTagsArray.push(tagsArray[tag].tags);
     }
     if (propertiesList.tags != undefined) {
@@ -59,26 +60,46 @@ export async function getBlocksInPage(
         propertiesList.tags.push(formattedTagsArray[tag]);
       }
     } else {
-      console.log(formattedTagsArray)
+      console.log(formattedTagsArray);
       propertiesList.tags = formattedTagsArray;
     }
   }
+  if (categoriesArray != []) {
+    let formattedCategoriesArray = [];
+    for (const category in categoriesArray) {
+      console.log(category);
+      console.log(categoriesArray);
+      formattedCategoriesArray.push(categoriesArray[category].categories);
+    }
+    if (propertiesList.categories != undefined) {
+      for (const category in formattedCategoriesArray) {
+        propertiesList.categories.push(formattedCategoriesArray[category]);
+      }
+    } else {
+      console.log(formattedCategoriesArray);
+      propertiesList.categories = formattedCategoriesArray;
+    }
+  }
+  
   if (dateArray != []) {
-    propertiesList.date = dateArray[0].originalDate;
+    propertiesList.date = dateArray[1].originalDate;
     propertiesList.lastMod = dateArray[0].updatedDate;
   }
   if (titleDetails != []) {
-    propertiesList.title = titleDetails[0].title;
+    propertiesList.title = titleDetails[0].noteName;
+    propertiesList.fileName = titleDetails[1].hugoFileName;
   }
   for (const prop in propertiesList) {
     let pvalue = propertiesList[prop];
+    console.log(pvalue);
+    console.log(propertiesList);
     finalString = `${finalString}\n${prop}:`;
     //FIXME ugly
     if (Array.isArray(pvalue)) {
       for (const key in pvalue) {
         console.log(key);
 
-        console.log(pvalue)
+        console.log(pvalue);
         console.log(pvalue[key]);
 
         finalString = `${finalString}\n- ${pvalue[key].replaceAll("[[", "")}`;
@@ -100,7 +121,7 @@ export async function getBlocksInPage(
     logseq.hideMainUI();
     handleClosePopup();
 
-    download(`${curPage.originalName}.md`, finalString);
+    download(`${propertiesList.fileName}.md`, finalString);
   } else {
     zip.file(`${curPage.originalName}.md`, finalString);
 

@@ -193,7 +193,7 @@ const App: React.FC = () => {
                     true,
                     mappedtagsValues,
                     [{"updatedDate": updatedDate}, {"originalDate": originalDate}],
-                    [{"noteName": noteName}, [{"hugoFileName" :hugoFileName}], mappedCategoryValues]
+                    [{"noteName": noteName}, {"hugoFileName" :hugoFileName}], mappedCategoryValues
                   );
                 }}
               >

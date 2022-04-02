@@ -41,17 +41,15 @@ export async function getBlocksInPage(
 ) {
   // async function createExport2() {
   let txt = "";
-  console.log(e.page);
   const curPage = await logseq.Editor.getPage(e.page)
   const docTree = await logseq.Editor.getPageBlocksTree(curPage.originalName);
 
   //page meta-data
   let finalString = `---\ntitle: \"${curPage.originalName}\"`;
-  console.log(curPage);
-  console.log(curPage.properties)
-  var propertiesList = curPage.properties;
-  console.log(propertiesList);
-
+  let propertiesList = []
+  if (curPage.properties != undefined ){
+    propertiesList = curPage.properties;
+  }
   if (tagsArray != []) {
     let formattedTagsArray = [];
     for (const tag in tagsArray) {
@@ -62,23 +60,20 @@ export async function getBlocksInPage(
         propertiesList.tags.push(formattedTagsArray[tag]);
       }
     } else {
-      console.log(formattedTagsArray);
       propertiesList.tags = formattedTagsArray;
     }
   }
   if (categoriesArray != []) {
     let formattedCategoriesArray = [];
     for (const category in categoriesArray) {
-      console.log(category);
-      console.log(categoriesArray);
-      formattedCategoriesArray.push(categoriesArray[category].categories);
+      formattedCategoriesArray.push(categoriesArray[category].category);
     }
     if (propertiesList.categories != undefined) {
       for (const category in formattedCategoriesArray) {
         propertiesList.categories.push(formattedCategoriesArray[category]);
       }
     } else {
-      console.log(formattedCategoriesArray);
+
       propertiesList.categories = formattedCategoriesArray;
     }
   }
@@ -93,16 +88,10 @@ export async function getBlocksInPage(
   }
   for (const prop in propertiesList) {
     let pvalue = propertiesList[prop];
-    console.log(pvalue);
-    console.log(propertiesList);
     finalString = `${finalString}\n${prop}:`;
     //FIXME ugly
     if (Array.isArray(pvalue)) {
       for (const key in pvalue) {
-        console.log(key);
-
-        console.log(pvalue);
-        console.log(pvalue[key]);
 
         finalString = `${finalString}\n- ${pvalue[key].replaceAll("[[", "")}`;
       }
@@ -144,14 +133,11 @@ async function parsePage(finalString: string, docTree) {
   for (const x in docTree) {
     // skip meta-data
     if (!(parseInt(x) === 0 && docTree[x].level === 1)) {
-      // console.log("aq5",docTree[x].content)
       finalString = `${finalString}\n${await parseText(docTree[x])}`;
       if (docTree[x].children.length > 0)
         finalString = await parsePage(finalString, docTree[x].children);
-      // console.log("aq5.5",finalString)
     }
   }
-  // console.log("aq6",finalString)
   return finalString;
 }
 

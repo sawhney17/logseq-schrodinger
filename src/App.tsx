@@ -146,10 +146,10 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <div className="flex justify-between pb-2">
-                      <p className="inline-block pr-40">tagss</p>
+                      <p className="inline-block pr-40">Categories</p>
                       <div className="px-2">
                         <button
-                          onClick={createNewtags}
+                          onClick={createNewCategory}
                           className="bg-white text-black font-bold p-2 rounded-sm h-max"
                         >
                           +

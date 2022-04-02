@@ -41,18 +41,20 @@ export async function getBlocksInPage(
 ) {
   // async function createExport2() {
   let txt = "";
-  const curPage = await logseq.Editor.getPage(e.page);
+  console.log(e.page);
+  const curPage = await logseq.Editor.getPage(e.page)
   const docTree = await logseq.Editor.getPageBlocksTree(curPage.originalName);
 
   //page meta-data
   let finalString = `---\ntitle: \"${curPage.originalName}\"`;
+  console.log(curPage);
+  console.log(curPage.properties)
   var propertiesList = curPage.properties;
   console.log(propertiesList);
+
   if (tagsArray != []) {
     let formattedTagsArray = [];
     for (const tag in tagsArray) {
-      console.log(tag);
-      console.log(tagsArray);
       formattedTagsArray.push(tagsArray[tag].tags);
     }
     if (propertiesList.tags != undefined) {
@@ -80,7 +82,7 @@ export async function getBlocksInPage(
       propertiesList.categories = formattedCategoriesArray;
     }
   }
-  
+
   if (dateArray != []) {
     propertiesList.date = dateArray[1].originalDate;
     propertiesList.lastMod = dateArray[0].updatedDate;

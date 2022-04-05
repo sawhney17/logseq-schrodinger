@@ -41,13 +41,13 @@ export async function getBlocksInPage(
 ) {
   // async function createExport2() {
   let txt = "";
-  const curPage = await logseq.Editor.getPage(e.page)
+  const curPage = await logseq.Editor.getPage(e.page);
   const docTree = await logseq.Editor.getPageBlocksTree(curPage.originalName);
 
   //page meta-data
   let finalString = `---\ntitle: \"${curPage.originalName}\"`;
-  let propertiesList = []
-  if (curPage.properties != undefined ){
+  let propertiesList = [];
+  if (curPage.properties != undefined) {
     propertiesList = curPage.properties;
   }
   if (tagsArray != []) {
@@ -73,16 +73,20 @@ export async function getBlocksInPage(
         propertiesList.categories.push(formattedCategoriesArray[category]);
       }
     } else {
-
       propertiesList.categories = formattedCategoriesArray;
     }
   }
 
-  if (dateArray != []) {
+  let emptyArray = [];
+  if (dateArray == emptyArray) {
+    console.log("equal");
+  }
+  if (dateArray.length > 0) {
+    console.log("Not equal");
     propertiesList.date = dateArray[1].originalDate;
     propertiesList.lastMod = dateArray[0].updatedDate;
   }
-  if (titleDetails != []) {
+  if (titleDetails.length > 0) {
     propertiesList.title = titleDetails[0].noteName;
     propertiesList.fileName = titleDetails[1].hugoFileName;
   }
@@ -92,7 +96,6 @@ export async function getBlocksInPage(
     //FIXME ugly
     if (Array.isArray(pvalue)) {
       for (const key in pvalue) {
-
         finalString = `${finalString}\n- ${pvalue[key].replaceAll("[[", "")}`;
       }
     } else {
@@ -122,9 +125,13 @@ export async function getBlocksInPage(
         zip.generateAsync({ type: "blob" }).then(function (content) {
           // see FileSaver.js
           saveAs(content, "publicExport.zip");
+          //wait one second
+          // setTimeout(() => {
+          //   saveAs(content, "publicExport.zip");
+          // }, 1000);
           zip = new JSZip();
         });
-      }, imageTracker.length * 51);
+      }, imageTracker.length * 58);
     }
   }
 }
@@ -158,9 +165,8 @@ async function parseText(block: BlockEntity) {
         let finalLink = match.substring(1, match.length - 1);
         // return (match.substring(1, match.length - 1))
         text = text.replace(match, match.toLowerCase());
-        if (!finalLink.includes("http")) {
+        if (!finalLink.includes("http")|| !finalLink.includes(".pdf")) {
           text = text.replace("../", "/");
-
           imageTracker.push(finalLink);
           addImageToZip(finalLink);
         }
@@ -246,14 +252,20 @@ function addImageToZip(filePath) {
 
   document.body.appendChild(element);
   setTimeout(() => {
-    var base64 = getBase64Image(element);
-    document.body.removeChild(element);
-    zip.file(
-      "assets/" +
-        filePath.split("/")[filePath.split("/").length - 1].toLowerCase(),
-      base64,
-      { base64: true }
-    );
+      var base64 = getBase64Image(element);
+      document.body.removeChild(element);
+      if (base64 != "data:,") {
+        zip.file(
+          "assets/" +
+            filePath.split("/")[filePath.split("/").length - 1].toLowerCase(),
+          base64,
+          { base64: true }
+        );
+      }
+      else{
+        console.log(base64)
+      }
+        
   }, 50);
 }
 

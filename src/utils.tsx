@@ -159,8 +159,9 @@ async function parseText(block: BlockEntity) {
   });
 
   //Get regex to check if text contains a md image
+  const reImage = /!\[.*?\]\((.*?)\)/g  
   try {
-    text.match(/!\[.*?\]\((.*?)\)/g).forEach((element) => {
+    text.match(reImage).forEach((element) => {
       element.match(/(?<=!\[.*\])(.*)/g).forEach((match) => {
         let finalLink = match.substring(1, match.length - 1);
         // return (match.substring(1, match.length - 1))
@@ -174,14 +175,18 @@ async function parseText(block: BlockEntity) {
     });
   } catch (error) {}
   // Add indention — level zero is stripped of "-", rest are lists
+  // Experiment, no more lists, unless + or numbers
   // (unless they're not)
-  if (block.level > 1) {
-    txtBefore = " ".repeat((block.level - 1) * 2) + "+ ";
-    // txtBefore = "\n" + txtBefore
-    if (prevBlock.level === block.level) txtAfter = "";
-  }
+  // if (block.level > 1) {
+  //   txtBefore = " ".repeat((block.level - 1) * 2) + "+ ";
+  //   // txtBefore = "\n" + txtBefore
+  //   if (prevBlock.level === block.level) txtAfter = "";
+  // }
+  if (prevBlock.level === block.level) txtAfter = "";
   //exceptions (logseq has "-" before every block, Hugo doesn't)
   if (text.substring(0, 3) === "```") txtBefore = "";
+  // Don't - indent images
+  if (reImage.test(text)) txtBefore = "";
   //indent text + add newline after block
   text = txtBefore + text + txtAfter;
 
@@ -206,7 +211,7 @@ async function parseText(block: BlockEntity) {
 
   re = /#\+BEGIN_([A-Z]*).*\n(.*)\n#\+END_.*/gm;
   text = text.replace(re, "{{< logseq/org$1 >}}$2{{< / logseq/org$1 >}}");
-  text = text.toLowerCase();
+  // text = text.toLowerCase();
 
   text = text.replace(/:LOGBOOK:|collapsed:: true/gi, "");
   if (text.includes("CLOCK: [")) {

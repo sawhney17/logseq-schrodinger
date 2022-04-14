@@ -17,7 +17,7 @@ var zip = new JSZip();
 var imageTracker = [];
 export async function getAllPublicPages() {
   errorTracker = [];
-  logseq.DB.q("(page-property public)").then((result) => {
+  logseq.DB.q("[:find (pull ?p [*]) :where [?p :block/properties ?pr] [(get ?pr :public) ?t] [(= true ?t)]]").then((result) => {
     const mappedResults = result.map((page) => {
       return page.name;
     });

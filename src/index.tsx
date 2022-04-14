@@ -25,6 +25,13 @@ let settings: SettingSchemaDesc[] = [
 ];
 const main = async () => {
   console.log("plugin loade2d");
+  ReactDOM.render(
+    //Render react component
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+    document.getElementById("app")
+  );
   logseq.App.registerPageMenuItem("Export page to hugo", (e) => {
     ReactDOM.render(
       //Render react component
@@ -35,6 +42,39 @@ const main = async () => {
     );
     logseq.showMainUI()
     handleClosePopup()
+  });
+
+  logseq.setMainUIInlineStyle({
+    position: 'fixed',
+    zIndex: 999,
+    transform: 'translateX(-50%)',
+});
+  function createModel() {
+    return {
+      show(e:any) {
+        const {rect} = e
+
+            logseq.setMainUIInlineStyle({
+                top: `${rect.top + 25}px`,
+                left: `${rect.right - 17}px`,
+            })
+            
+        logseq.toggleMainUI();
+      },
+    };
+  }
+
+  logseq.provideModel(createModel());
+  logseq.setMainUIInlineStyle({
+    zIndex: 11,
+  });
+  logseq.App.registerUIItem("toolbar", {
+    key: "hugo-single-export",
+    template: `
+      <a class="button" data-on-click="show" data-rect>
+        <i class="ti ti-calendar"></i>
+      </a>
+    `,
   });
   logseq.App.registerPageMenuItem(
     "Export all public pages to hugo",

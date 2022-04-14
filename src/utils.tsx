@@ -45,7 +45,7 @@ export async function getBlocksInPage(
   const docTree = await logseq.Editor.getPageBlocksTree(curPage.originalName);
 
   //page meta-data
-  let finalString = `---\ntitle: \"${curPage.originalName}\"`;
+  let finalString = `---`;
   let propertiesList = [];
   if (curPage.properties != undefined) {
     propertiesList = curPage.properties;
@@ -102,8 +102,10 @@ export async function getBlocksInPage(
       if (pvalue === "category") pvalue = "categories";
       if (pvalue in ["categories", "tags"]) txt = "\n-";
       finalString = `${finalString}${txt} ${pvalue}`;
+      
     }
   }
+  console.log(finalString)
   finalString = `${finalString}\n---`;
 
   // parse page-content

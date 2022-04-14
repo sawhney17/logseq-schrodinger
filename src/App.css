@@ -58,10 +58,10 @@ html {
   /* background: rgb(40, 157, 165);  */
   z-index: 9;
   border-radius: 15px;
-  top: 30%;
-  width: 60%;
+  /* top: 10%; */
+  width: 300px;
   display: flex;
-  transform: translate(0, 100px);
+  transform: translate(0, 5px);
   flex-direction: column;
   color: #ffffff;
   /* align-items: center; */

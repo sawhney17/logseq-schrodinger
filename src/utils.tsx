@@ -45,7 +45,7 @@ export async function getBlocksInPage(
   const docTree = await logseq.Editor.getPageBlocksTree(curPage.originalName);
 
   //page meta-data
-  let finalString = `---\ntitle: \"${curPage.originalName}\"`;
+  let finalString = `---\n`;
   let propertiesList = [];
   if (curPage.properties != undefined) {
     propertiesList = curPage.properties;
@@ -70,6 +70,7 @@ export async function getBlocksInPage(
     }
     if (propertiesList.categories != undefined) {
       for (const category in formattedCategoriesArray) {
+        console.log(propertiesList.categories)
         propertiesList.categories.push(formattedCategoriesArray[category]);
       }
     } else {
@@ -87,9 +88,12 @@ export async function getBlocksInPage(
     propertiesList.lastMod = dateArray[0].updatedDate;
   }
   if (titleDetails.length > 0) {
+    console.log(propertiesList)
     propertiesList.title = titleDetails[0].noteName;
+    console.log(propertiesList)
     propertiesList.fileName = titleDetails[1].hugoFileName;
   }
+  console.log(propertiesList)
   for (const prop in propertiesList) {
     let pvalue = propertiesList[prop];
     finalString = `${finalString}\n${prop}:`;
@@ -102,8 +106,10 @@ export async function getBlocksInPage(
       if (pvalue === "category") pvalue = "categories";
       if (pvalue in ["categories", "tags"]) txt = "\n-";
       finalString = `${finalString}${txt} ${pvalue}`;
+      
     }
   }
+  console.log(finalString)
   finalString = `${finalString}\n---`;
 
   // parse page-content

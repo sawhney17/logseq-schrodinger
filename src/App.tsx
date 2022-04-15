@@ -119,7 +119,7 @@ const App: React.FC = () => {
                     <div className="inline-block px-2">
                       <button
                         onClick={createNewtags}
-                        className="bg-white text-black font-bold p-2 rounded-sm h-max"
+                        className="bg-white text-black font-bold px-2 rounded-sm h-max"
                       >
                         +
                       </button>
@@ -140,7 +140,7 @@ const App: React.FC = () => {
                             onClick={() => {
                               deletetags(index);
                             }}
-                            className="bg-white text-black font-bold pr-2 rounded-sm h-max px-3"
+                            className="bg-white text-black font-bold px-3 pr-2 rounded-sm h-max"
                           >
                             -
                           </button>
@@ -155,10 +155,10 @@ const App: React.FC = () => {
                   <div>
                     <div className="flex justify-between">
                       <p className="inline-block">Categories</p>
-                      <div className="inline-block px-2">
+                      <div className="p-2 inline-block">
                         <button
                           onClick={createNewCategory}
-                          className="bg-white text-black font-bold p-2 rounded-sm h-max"
+                          className="bg-white text-black font-bold px-2 pr-2 rounded-sm h-max"
                         >
                           +
                         </button>
@@ -179,7 +179,7 @@ const App: React.FC = () => {
                               onClick={() => {
                                 deleteCategory(index);
                               }}
-                              className="bg-white text-black font-bold pr-2 rounded-sm h-max px-3"
+                              className="bg-white text-black font-bold px-3 pr-2 rounded-sm h-max"
                             >
                               -
                             </button>
@@ -193,7 +193,7 @@ const App: React.FC = () => {
             </div>
             <div className="flex justify-center">
               <button
-                className=" border-light-300 border-2 w-3/12 hover:bg-black p-3 px-5 rounded-lg"
+                className=" border-light-300 border-2 w-200px hover:bg-black p-3 px-5 rounded-lg"
                 onClick={async () => {
                   getBlocksInPage(
                     { page: await ( logseq.Editor.getCurrentPage()) },

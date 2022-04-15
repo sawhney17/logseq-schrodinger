@@ -15,7 +15,11 @@ import { path } from "./index";
 var errorTracker = [];
 var zip = new JSZip();
 var imageTracker = [];
-export async function getAllPublicPages() {
+
+//Retired function
+//I kept on missing pages?!?!?!
+//Never figured out why
+export async function getAllPublicPages_orig() {
   errorTracker = [];
   logseq.DB.q("(page-property public)").then((result) => {
     const mappedResults = result.map((page) => {
@@ -23,13 +27,125 @@ export async function getAllPublicPages() {
     });
     for (const x in mappedResults) {
       if (x != `${mappedResults.length - 1}`) {
+        console.log(`DB ${x} (≠)`, mappedResults[x])
         getBlocksInPage({ page: mappedResults[x] }, false, false);
       } else {
+        console.log(`DB ${x}`, mappedResults[x])
         getBlocksInPage({ page: mappedResults[x] }, false, true);
       }
     }
   });
 }
+
+export async function getAllPublicPages() {
+  //needs to be both public, and a page (with a name)
+  const query = "[:find (pull ?p [*]) :where [?p :block/properties ?pr] [(get ?pr :public) ?t] [(= true ?t)][?p :block/name ?n]]"
+  let qresult = await logseq.DB.datascriptQuery(query)
+      qresult = qresult?.flat()
+  for (const x in qresult) {
+    if (x != `${qresult.length - 1}`) {
+      await getBlocksInPage(qresult[x], false, false);
+    } else {
+      await getBlocksInPage(qresult[x], false, true);
+    }
+  }
+}
+
+function hugoDate(timestamp) {
+  let date = new Date(timestamp);
+  return parseInt(`${date.getFullYear()}-${("0" + (date.getMonth()+1)).slice(-2)}-${("0" + date.getDate()).slice(-2)}`,10)
+}
+
+async function getTags(curPage) {
+//return array of tag names
+  let ret = []
+  for (let [prop, val] of Object.entries(curPage.tags)) {
+    let block = await logseq.Editor.getPage(val.id)
+    ret.push(block.name)
+  }
+  return ret
+}
+
+//parse files meta-data
+async function parseMeta(
+  curPage,
+  tagsArray = [],
+  dateArray = [],
+  titleDetails = [],
+  categoriesArray = []) 
+  {
+  // console.log("DB curPage", curPage)
+  let propList = [];
+
+  //get all properties - fix later
+  propList = curPage?.properties;
+  
+  //Title
+  //FIXME is filename used?
+  propList.title = curPage["original-name"]
+  if (titleDetails.length > 0) {
+    propList.title = titleDetails[0].noteName;
+    propList.fileName = titleDetails[1].hugoFileName;
+  }
+  
+  //Tags
+  propList.tags = (curPage?.tags) ? await getTags(curPage) : ""
+  if (tagsArray != []) {
+    let formattedTagsArray = [];
+    for (const tag in tagsArray) {
+      formattedTagsArray.push(tagsArray[tag].tags);
+    }
+    if (propList.tags != undefined) {
+      for (const tag in formattedTagsArray) {
+        propList.tags.push(formattedTagsArray[tag]);
+      }
+    } else {
+      propList.tags = formattedTagsArray;
+    }
+  }
+  
+  //Categories - 2 possible spellings!
+  const tmpCat = (curPage?.properties.category) ? (curPage?.properties.category) : ""
+  propList.categories = (curPage?.properties.categories) ? curPage?.properties.categories : tmpCat
+  if (categoriesArray != []) {
+    let formattedCategoriesArray = [];
+    for (const category in categoriesArray) {
+      formattedCategoriesArray.push(categoriesArray[category].category);
+    }
+    if (propList.categories != undefined) {
+      for (const category in formattedCategoriesArray) {
+        propList.categories.push(formattedCategoriesArray[category]);
+      }
+    } else {
+      propList.categories = formattedCategoriesArray;
+    }
+  }
+  
+  //Date - if not defined, convert Logseq timestamp
+  propList.date = (curPage?.properties.date) ? curPage?.properties.date : hugoDate(curPage["created-at"])
+  propList.lastMod = (curPage?.properties.lastmod) ? curPage?.properties.lastmod : hugoDate(curPage["updated-at"])
+  if (dateArray.length > 0) {
+    propList.date = dateArray[1].originalDate;
+    propList.lastMod = dateArray[0].updatedDate;
+  }
+  
+  //convert propList to Hugo yaml
+  // https://gohugo.io/content-management/front-matter/
+  // console.log("DB proplist", propList)
+  let ret = `---`;
+  for (let [prop, value] of Object.entries(propList)) {
+    if (Array.isArray(value)) {
+      ret += `\n${prop}:`
+      value.forEach(element => ret += `\n- ${element}`)
+    } else {
+      ret += `\n${prop}: ${value}`
+    }
+  }
+  ret += "\n---";
+  // console.log("Metadata:",ret)
+  return ret
+}
+  
 export async function getBlocksInPage(
   e,
   singleFile,
@@ -39,87 +155,23 @@ export async function getBlocksInPage(
   titleDetails = [],
   categoriesArray = []
 ) {
-  // async function createExport2() {
-  let txt = "";
-  const curPage = await logseq.Editor.getPage(e.page);
-  const docTree = await logseq.Editor.getPageBlocksTree(curPage.originalName);
-
-  //page meta-data
-  let finalString = `---`;
-  let propertiesList = [];
-  if (curPage.properties != undefined) {
-    propertiesList = curPage.properties;
-  }
-  if (tagsArray != []) {
-    let formattedTagsArray = [];
-    for (const tag in tagsArray) {
-      formattedTagsArray.push(tagsArray[tag].tags);
-    }
-    if (propertiesList.tags != undefined) {
-      for (const tag in formattedTagsArray) {
-        propertiesList.tags.push(formattedTagsArray[tag]);
-      }
-    } else {
-      propertiesList.tags = formattedTagsArray;
-    }
-  }
-  if (categoriesArray != []) {
-    let formattedCategoriesArray = [];
-    for (const category in categoriesArray) {
-      formattedCategoriesArray.push(categoriesArray[category].category);
-    }
-    if (propertiesList.categories != undefined) {
-      for (const category in formattedCategoriesArray) {
-        propertiesList.categories.push(formattedCategoriesArray[category]);
-      }
-    } else {
-      propertiesList.categories = formattedCategoriesArray;
-    }
-  }
-
-  let emptyArray = [];
-  if (dateArray == emptyArray) {
-    console.log("equal");
-  }
-  if (dateArray.length > 0) {
-    console.log("Not equal");
-    propertiesList.date = dateArray[1].originalDate;
-    propertiesList.lastMod = dateArray[0].updatedDate;
-  }
-  if (titleDetails.length > 0) {
-    propertiesList.title = titleDetails[0].noteName;
-    propertiesList.fileName = titleDetails[1].hugoFileName;
-  }
-  for (const prop in propertiesList) {
-    let pvalue = propertiesList[prop];
-    finalString = `${finalString}\n${prop}:`;
-    //FIXME ugly
-    if (Array.isArray(pvalue)) {
-      for (const key in pvalue) {
-        finalString = `${finalString}\n- ${pvalue[key].replaceAll("[[", "")}`;
-      }
-    } else {
-      if (pvalue === "category") pvalue = "categories";
-      if (pvalue in ["categories", "tags"]) txt = "\n-";
-      finalString = `${finalString}${txt} ${pvalue}`;
-      
-    }
-  }
-  console.log(finalString)
-  finalString = `${finalString}\n---`;
+  // console.log("DB eee", e)
+  const docTree = await logseq.Editor.getPageBlocksTree(e["original-name"]);
+  const metaData = await parseMeta(e)
 
   // parse page-content
-  finalString = await parsePage(finalString, docTree);
+  let finalString = await parsePage(metaData, docTree);
+  // console.log("DB finalstring", finalString) 
 
-  if (errorTracker.length > 0) {
-  }
+  // FIXME ??
+  if (errorTracker.length > 0) {}
   if (singleFile) {
     logseq.hideMainUI();
     handleClosePopup();
 
     download(`${propertiesList.fileName}.md`, finalString);
   } else {
-    zip.file(`${curPage.originalName}.md`, finalString);
+    zip.file(`${e["original-name"]}.md`, finalString);
 
     if (isLast) {
       setTimeout(() => {
@@ -139,6 +191,7 @@ export async function getBlocksInPage(
 }
 
 async function parsePage(finalString: string, docTree) {
+  // console.log("DB parsePage")
   for (const x in docTree) {
     // skip meta-data
     if (!(parseInt(x) === 0 && docTree[x].level === 1)) {
@@ -161,8 +214,9 @@ async function parseText(block: BlockEntity) {
   });
 
   //Get regex to check if text contains a md image
+  const reImage = /!\[.*?\]\((.*?)\)/g  
   try {
-    text.match(/!\[.*?\]\((.*?)\)/g).forEach((element) => {
+    text.match(reImage).forEach((element) => {
       element.match(/(?<=!\[.*\])(.*)/g).forEach((match) => {
         let finalLink = match.substring(1, match.length - 1);
         // return (match.substring(1, match.length - 1))
@@ -176,14 +230,18 @@ async function parseText(block: BlockEntity) {
     });
   } catch (error) {}
   // Add indention — level zero is stripped of "-", rest are lists
+  // Experiment, no more lists, unless + or numbers
   // (unless they're not)
-  if (block.level > 1) {
-    txtBefore = " ".repeat((block.level - 1) * 2) + "+ ";
-    // txtBefore = "\n" + txtBefore
-    if (prevBlock.level === block.level) txtAfter = "";
-  }
+  // if (block.level > 1) {
+  //   txtBefore = " ".repeat((block.level - 1) * 2) + "+ ";
+  //   // txtBefore = "\n" + txtBefore
+  //   if (prevBlock.level === block.level) txtAfter = "";
+  // }
+  if (prevBlock.level === block.level) txtAfter = "";
   //exceptions (logseq has "-" before every block, Hugo doesn't)
   if (text.substring(0, 3) === "```") txtBefore = "";
+  // Don't - indent images
+  if (reImage.test(text)) txtBefore = "";
   //indent text + add newline after block
   text = txtBefore + text + txtAfter;
 
@@ -208,7 +266,7 @@ async function parseText(block: BlockEntity) {
 
   re = /#\+BEGIN_([A-Z]*).*\n(.*)\n#\+END_.*/gm;
   text = text.replace(re, "{{< logseq/org$1 >}}$2{{< / logseq/org$1 >}}");
-  text = text.toLowerCase();
+  // text = text.toLowerCase();
 
   text = text.replace(/:LOGBOOK:|collapsed:: true/gi, "");
   if (text.includes("CLOCK: [")) {

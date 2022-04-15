@@ -56,16 +56,6 @@ function hugoDate(timestamp) {
   return parseInt(`${date.getFullYear()}-${("0" + (date.getMonth()+1)).slice(-2)}-${("0" + date.getDate()).slice(-2)}`,10)
 }
 
-async function getTags(curPage) {
-//return array of tag names
-  let ret = []
-  for (let [prop, val] of Object.entries(curPage.tags)) {
-    let block = await logseq.Editor.getPage(val.id)
-    ret.push(block.name)
-  }
-  return ret
-}
-
 //parse files meta-data
 async function parseMeta(
   curPage,
@@ -75,10 +65,11 @@ async function parseMeta(
   categoriesArray = []) 
   {
   // console.log("DB curPage", curPage)
+  console.log("Hi")
   let propList = [];
 
   //get all properties - fix later
-  propList = curPage?.properties;
+  propList = curPage?.page.properties;
   
   //Title
   //FIXME is filename used?
@@ -89,7 +80,7 @@ async function parseMeta(
   }
   
   //Tags
-  propList.tags = (curPage?.tags) ? await getTags(curPage) : ""
+  propList.tags = (curPage?.page.properties.tags) ? (curPage?.page.properties.tags) : []
   if (tagsArray != []) {
     let formattedTagsArray = [];
     for (const tag in tagsArray) {
@@ -97,6 +88,7 @@ async function parseMeta(
     }
     if (propList.tags != undefined) {
       for (const tag in formattedTagsArray) {
+        console.log(propList)
         propList.tags.push(formattedTagsArray[tag]);
       }
     } else {
@@ -105,8 +97,8 @@ async function parseMeta(
   }
   
   //Categories - 2 possible spellings!
-  const tmpCat = (curPage?.properties.category) ? (curPage?.properties.category) : ""
-  propList.categories = (curPage?.properties.categories) ? curPage?.properties.categories : tmpCat
+  const tmpCat = (curPage?.page.properties.category) ? (curPage?.page.properties.category) : ""
+  propList.categories = (curPage?.page.properties.categories) ? curPage?.page.properties.categories : tmpCat
   if (categoriesArray != []) {
     let formattedCategoriesArray = [];
     for (const category in categoriesArray) {
@@ -122,8 +114,8 @@ async function parseMeta(
   }
   
   //Date - if not defined, convert Logseq timestamp
-  propList.date = (curPage?.properties.date) ? curPage?.properties.date : hugoDate(curPage["created-at"])
-  propList.lastMod = (curPage?.properties.lastmod) ? curPage?.properties.lastmod : hugoDate(curPage["updated-at"])
+  propList.date = (curPage?.page.properties.date) ? curPage?.page.properties.date : hugoDate(curPage["created-at"])
+  propList.lastMod = (curPage?.page.properties.lastmod) ? curPage?.page.properties.lastmod : hugoDate(curPage["updated-at"])
   if (dateArray.length > 0) {
     propList.date = dateArray[1].originalDate;
     propList.lastMod = dateArray[0].updatedDate;
@@ -156,10 +148,13 @@ export async function getBlocksInPage(
   categoriesArray = []
 ) {
   // console.log("DB eee", e)
-  const docTree = await logseq.Editor.getPageBlocksTree(e["original-name"]);
-  const metaData = await parseMeta(e)
-
+  console.log("metaData")
+  console.log(e.page)
+  const docTree = await logseq.Editor.getPageBlocksTree(e.page["originalName"]);
+  console.log("metaData")
+  const metaData = await parseMeta(e, tagsArray, dateArray, titleDetails, categoriesArray);
   // parse page-content
+
   let finalString = await parsePage(metaData, docTree);
   // console.log("DB finalstring", finalString) 
 
@@ -169,7 +164,7 @@ export async function getBlocksInPage(
     logseq.hideMainUI();
     handleClosePopup();
 
-    download(`${propertiesList.fileName}.md`, finalString);
+    download(`${titleDetails[1].hugoFileName}.md`, finalString);
   } else {
     zip.file(`${e["original-name"]}.md`, finalString);
 

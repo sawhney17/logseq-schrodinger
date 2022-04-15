@@ -60,6 +60,7 @@ const main = async () => {
             })
             
         logseq.toggleMainUI();
+        handleClosePopup()
       },
     };
   }

@@ -196,7 +196,7 @@ const App: React.FC = () => {
                 className=" border-light-300 border-2 w-3/12 hover:bg-black p-3 px-5 rounded-lg"
                 onClick={async () => {
                   getBlocksInPage(
-                    { page: await (await logseq.Editor.getCurrentPage()).name },
+                    { page: await ( logseq.Editor.getCurrentPage()) },
                     true,
                     true,
                     mappedtagsValues,

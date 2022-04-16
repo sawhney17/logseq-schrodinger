@@ -1,22 +1,6 @@
 <div id="top"></div>
-<!--
-*** Thanks for checking out the logseq-starter-plugin. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
--->
-
-
-
 <!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
+
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
@@ -31,10 +15,10 @@
     <img src="icon.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">logseq-starter-plugin</h3>
+  <h3 align="center">logseq Schrödinger</h3>
 
   <p align="center">
-    An awesome README template to jumpstart your projects!
+    An awesome <a href="https://logseq.com">Logseq</a> plugin to jumpstart your digital garden 🌱!
     <br />
     <a href="https://github.com/sawhney17/logseq-schrodinger"><strong>Explore the docs »</strong></a>
     <br />
@@ -229,6 +213,9 @@ Project Link: [https://github.com/sawhney17/logseq-schrodinger](https://github.c
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+## Acknowledgments
+
+I would like to thank Alex Qwxlea ([@twitter_handle](https://twitter.com/QwxleaA)) for the idea to write this Logseq plugin. Also for breaking the plugin after I wrote it. And finally, thank him for adding this note: Qwxlea, you're the best 😁!
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
@@ -245,3 +232,4 @@ Project Link: [https://github.com/sawhney17/logseq-schrodinger](https://github.c
 [product-screenshot]: images/screenshot.jpg
 [configuration-screenshot]: ./images/configuration.png
 [hugo]: https://gohugo.io
+[logseq]: https://logseq.com

@@ -74,7 +74,10 @@ async function parseMeta(
   
   //Title
   //FIXME is filename used?
-  propList.title = curPage["original-name"]
+  propList.title = curPage.page["original-name"]
+  console.log(curPage)
+  console.log(propList.title)
+  console.log(propList)
   if (titleDetails.length > 0) {
     propList.title = titleDetails[0].noteName;
     propList.fileName = titleDetails[1].hugoFileName;
@@ -115,8 +118,8 @@ async function parseMeta(
   }
   
   //Date - if not defined, convert Logseq timestamp
-  propList.date = (curPage?.page.properties.date) ? curPage?.page.properties.date : hugoDate(curPage["created-at"])
-  propList.lastMod = (curPage?.page.properties.lastmod) ? curPage?.page.properties.lastmod : hugoDate(curPage["updated-at"])
+  propList.date = (curPage?.page.properties.date) ? curPage?.page.properties.date : hugoDate(curPage.page["created-at"])
+  propList.lastMod = (curPage?.page.properties.lastmod) ? curPage?.page.properties.lastmod : hugoDate(curPage.page["updated-at"])
   if (dateArray.length > 0) {
     propList.date = dateArray[1].originalDate;
     propList.lastMod = dateArray[0].updatedDate;

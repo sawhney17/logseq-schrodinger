@@ -25,7 +25,7 @@
   "logseq": {
     "id": "logseq-hugo-plugin",
     "title": "logseq-hugo-plugin",
-    "icon": "./icon.jpeg"
+    "icon": "./icon.png"
   },
   "devDependencies": {
     "@types/react": "^17.0.38",

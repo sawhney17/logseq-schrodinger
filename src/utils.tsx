@@ -284,6 +284,10 @@ async function parseText(block: BlockEntity) {
     text = text.replaceAll("]]", "");
   }
 
+  //highlight text, not supported in hugo by default!
+  re = /(==(.*?)==)/gm
+  text = text.replace(re, "{{< logseq/mark >}}$2{{< / logseq/mark >}}")
+
   re = /#\+BEGIN_([A-Z]*).*\n(.*)\n#\+END_.*/gm;
   text = text.replace(re, "{{< logseq/org$1 >}}$2{{< / logseq/org$1 >}}");
   // text = text.toLowerCase();

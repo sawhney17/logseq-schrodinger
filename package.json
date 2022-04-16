@@ -1,6 +1,6 @@
 {
   "name": "logseq-schrodinger",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "An awesome logseq plugin to export to Hugo Static sites and jumpstart your digital garden 🌱!",
   "main": "dist/index.html",
   "targets": {

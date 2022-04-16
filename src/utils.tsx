@@ -12,6 +12,7 @@ import ReactDOM from "react-dom";
 import App from "./App";
 import { handleClosePopup } from "./handleClosePopup";
 import { path } from "./index";
+import { title } from "process";
 var errorTracker = [];
 var zip = new JSZip();
 var imageTracker = [];
@@ -44,9 +45,9 @@ export async function getAllPublicPages() {
       qresult = qresult?.flat()
   for (const x in qresult) {
     if (x != `${qresult.length - 1}`) {
-      await getBlocksInPage(qresult[x], false, false);
+      await getBlocksInPage({page: qresult[x]}, false, false);
     } else {
-      await getBlocksInPage(qresult[x], false, true);
+      await getBlocksInPage({page: qresult[x]}, false, true);
     }
   }
 }
@@ -97,7 +98,7 @@ async function parseMeta(
   }
   
   //Categories - 2 possible spellings!
-  const tmpCat = (curPage?.page.properties.category) ? (curPage?.page.properties.category) : ""
+  const tmpCat = (curPage?.page.properties.category) ? (curPage?.page.properties.category) : []
   propList.categories = (curPage?.page.properties.categories) ? curPage?.page.properties.categories : tmpCat
   if (categoriesArray != []) {
     let formattedCategoriesArray = [];
@@ -147,11 +148,15 @@ export async function getBlocksInPage(
   titleDetails = [],
   categoriesArray = []
 ) {
-  // console.log("DB eee", e)
-  console.log("metaData")
-  console.log(e.page)
-  const docTree = await logseq.Editor.getPageBlocksTree(e.page["originalName"]);
-  console.log("metaData")
+  //if e.page.originalName is undefined, set page to equal e.page.original-name
+  // console.log("DB e", e)
+  let curPage = e.page;
+  if (curPage.originalName != undefined) {
+    curPage["original-name"] = curPage.originalName;
+  }
+
+  const docTree = await logseq.Editor.getPageBlocksTree(curPage["original-name"]);
+
   const metaData = await parseMeta(e, tagsArray, dateArray, titleDetails, categoriesArray);
   // parse page-content
 
@@ -163,10 +168,10 @@ export async function getBlocksInPage(
   if (singleFile) {
     logseq.hideMainUI();
     handleClosePopup();
-
     download(`${titleDetails[1].hugoFileName}.md`, finalString);
   } else {
-    zip.file(`${e["original-name"]}.md`, finalString);
+    console.log(e["original-name"])
+    zip.file(`${curPage["original-name"]}.md`, finalString);
 
     if (isLast) {
       setTimeout(() => {
@@ -342,8 +347,3 @@ function download(filename, text) {
 
   document.body.removeChild(element);
 }
-//Conversions to be handled
-//1. DONE Convert page properties
-//2. Remove bullets and indentation ???? in progress
-//3. DONE Translate links from [[Logseq export]] should be translated as `[Logseq export]({{< ref "Logseq_export" >}})`
-//4. Convert to .orig file

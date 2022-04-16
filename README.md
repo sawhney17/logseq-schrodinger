@@ -215,7 +215,7 @@ Project Link: [https://github.com/sawhney17/logseq-schrodinger](https://github.c
 
 ## Acknowledgments
 
-I would like to thank Alex Qwxlea ([@twitter_handle](https://twitter.com/QwxleaA)) for the idea to write this Loseq plugin. Also for breaking the plugin after I wrote it. And finally, thank him for adding this note: Qwxlea, you're the best 😁!
+I would like to thank Alex Qwxlea ([@twitter_handle](https://twitter.com/QwxleaA)) for the idea to write this Logseq plugin. Also for breaking the plugin after I wrote it. And finally, thank him for adding this note: Qwxlea, you're the best 😁!
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->

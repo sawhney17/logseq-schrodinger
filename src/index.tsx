@@ -32,17 +32,6 @@ const main = async () => {
     </React.StrictMode>,
     document.getElementById("app")
   );
-  logseq.App.registerPageMenuItem("Export page to hugo", (e) => {
-    ReactDOM.render(
-      //Render react component
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>,
-      document.getElementById("app")
-    );
-    logseq.showMainUI()
-    handleClosePopup()
-  });
 
   logseq.setMainUIInlineStyle({
     position: 'fixed',
@@ -73,7 +62,7 @@ const main = async () => {
     key: "hugo-single-export",
     template: `
       <a class="button" data-on-click="show" data-rect>
-        <i class="ti ti-calendar"></i>
+        <i class="ti ti-file-zip"></i>
       </a>
     `,
   });

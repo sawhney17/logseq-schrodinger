@@ -65,7 +65,7 @@ async function parseMeta(
   categoriesArray = []) 
   {
   // console.log("DB curPage", curPage)
-  console.log("Hi")
+  // console.log("Hi")
   let propList = [];
 
   //get all properties - fix later

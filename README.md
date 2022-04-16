@@ -42,6 +42,7 @@
       <ul>
         <li><a href="#meta-data">Meta-data</a></li>
         <li><a href="#configuring_hugo">Configuring Hugo</a></li>
+        <li><a href="#admonitions">Admonitions</a></li>
       </ul>
     </li>
     <li><a href="#issues">Issues</a></li>
@@ -166,6 +167,53 @@ date:: 2012-04-06
 ```
 
 <img src="./images/backlinks.png" width="200px">
+
+### Admonitions
+
+Logseq has several built-in adminitions, namely:
+
+- caution
+- example
+- important
+- note
+- pinned
+- tip
+- quote
+- warning
+
+These get converted to:
+
+``` markdown
+{{< logseq/orgCAUTION >}}Caution here{{< / logseq/orgCAUTION >}}
+{{< logseq/orgEXAMPLE >}}This is an example{{< / logseq/orgEXAMPLE >}}
+{{< logseq/orgIMPORTANT >}}This is important{{< / logseq/orgIMPORTANT >}}
+{{< logseq/orgNOTE >}}This is a note{{< / logseq/orgNOTE >}}
+{{< logseq/orgPINNED >}}This is pinned{{< / logseq/orgPINNED >}}
+{{< logseq/orgTIP >}}This is a tip{{< / logseq/orgTIP >}}
+{{< logseq/orgQUOTE >}}This is a quote{{< / logseq/orgQUOTE >}}
+{{< logseq/orgWARNING >}}This is a warning{{< / logseq/orgWARNING >}}
+```
+
+So Hugo needs in `$HUGO/layouts/shortcodes/logseq/`:
+
+```
+orgCAUTION.html   
+orgEXAMPLE.html   
+orgIMPORTANT.html 
+orgNOTE.html      
+orgPINNED.html    
+orgQUOTE.html     
+orgTIP.html       
+orgWARNING.html
+```
+
+And they should contain something along the lines of:
+
+```html
+<div class="caution {{ .Get 0 }}">
+    {{ .Inner | $.Page.RenderString }}
+</div>
+```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 

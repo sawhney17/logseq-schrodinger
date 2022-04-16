@@ -54,7 +54,7 @@ export async function getAllPublicPages() {
 
 function hugoDate(timestamp) {
   let date = new Date(timestamp);
-  return parseInt(`${date.getFullYear()}-${("0" + (date.getMonth()+1)).slice(-2)}-${("0" + date.getDate()).slice(-2)}`,10)
+  return `${date.getFullYear()}-${("0" + (date.getMonth()+1))}-${(date.getDate())}`
 }
 
 //parse files meta-data
@@ -118,7 +118,7 @@ async function parseMeta(
   }
   
   //Date - if not defined, convert Logseq timestamp
-  propList.date = (curPage?.page.properties.date) ? curPage?.page.properties.date : hugoDate(curPage.page["created-at"])
+  propList.date = (curPage?.page.properties.date) ? (curPage?.page.properties.date) : hugoDate(curPage.page["created-at"])
   propList.lastMod = (curPage?.page.properties.lastmod) ? curPage?.page.properties.lastmod : hugoDate(curPage.page["updated-at"])
   if (dateArray.length > 0) {
     propList.date = dateArray[1].originalDate;

@@ -302,10 +302,10 @@ async function parseText(block: BlockEntity) {
         console.log(txt.toUpperCase() == qresult[x]["original-name"].toUpperCase())
         if (txt.toUpperCase() == qresult[x]["original-name"].toUpperCase()) {
           console.log("match")
-          return `[${txt}]({{< ref ${qresult[x]["original-name"].replaceAll(
+          return `[${txt}]({{< ref "${qresult[x]["original-name"].replaceAll(
             " ",
             " "
-          )} >}})`;
+          )}" >}})`;
         }
       }
       return txt;

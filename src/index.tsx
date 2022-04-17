@@ -33,7 +33,7 @@ let settings: SettingSchemaDesc[] = [
   }
 ];
 const main = async () => {
-  console.log("plugin loade2d");
+  console.log("Logseq Schrödinger plugin loaded");
   ReactDOM.render(
     //Render react component
     <React.StrictMode>

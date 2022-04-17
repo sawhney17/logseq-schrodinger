@@ -130,7 +130,7 @@ date:: 2012-04-06
 ```html
 {{ $re := $.File.BaseFileName }}
 {{ $backlinks := slice }}
-{{ range .Site.AllPages }}
+{{ range where .Site.RegularPages "Type" "page" }}
    {{ if and (findRE $re .RawContent) (not (eq $re .File.BaseFileName)) }}
       {{ $backlinks = $backlinks | append . }}
    {{ end }}
@@ -142,7 +142,7 @@ date:: 2012-04-06
     <div class="backlinks">
       <ul>
        {{ range $backlinks }}
-          <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+          <li class="capitalize"><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
        {{ end }}
      </ul>
     </div>
@@ -159,7 +159,7 @@ date:: 2012-04-06
   <h3>slightly related</h3>
   <ul>
   {{ range . -}}
-  <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+  <li class="capitalize"><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
   {{ end -}}
   </ul>
   {{ end -}}
@@ -221,6 +221,17 @@ And they should contain something along the lines of:
 ## Issues
 
 See the [open issues](https://github.com/sawhney17/logseq-schrodinger/issues) for a full list of proposed features (and known issues).
+
+### What works
+
+- Local Hugo links (but Logseq uses one folder for everything, so Hugo does too)
+- Block refs(!) — On conversion the block is pulled from the other location 
+- Images
+- Basic Markdown styling (including highlighting!)
+
+### What is known to *not* work
+
+- Indentation Logseq ➡ Hugo is still a work-in-progress
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 

@@ -87,8 +87,9 @@ async function parseMeta(
   let propList = [];
 
   //get all properties - fix later
-  propList = curPage?.page.properties;
-  
+  if (curPage?.page.properties != undefined){
+    propList = curPage?.page.properties;
+  }
   //Title
   //FIXME is filename used?
   propList.title = curPage.page["original-name"]
@@ -205,7 +206,7 @@ export async function getBlocksInPage(
           // }, 1000);
           zip = new JSZip();
         });
-      }, imageTracker.length * 58);
+      }, imageTracker.length * 102);
     }
   }
 }
@@ -252,11 +253,12 @@ async function parseText(block: BlockEntity) {
   // Add indention — level zero is stripped of "-", rest are lists
   // Experiment, no more lists, unless + or numbers
   // (unless they're not)
-  // if (block.level > 1) {
-  //   txtBefore = " ".repeat((block.level - 1) * 2) + "+ ";
-  //   // txtBefore = "\n" + txtBefore
-  //   if (prevBlock.level === block.level) txtAfter = "";
-  // }
+
+  if (block.level > 1) {
+    txtBefore = " ".repeat((block.level - 1) * 2) + "+ ";
+    // txtBefore = "\n" + txtBefore
+    if (prevBlock.level === block.level) txtAfter = "";
+  }
   if (prevBlock.level === block.level) txtAfter = "";
   //exceptions (logseq has "-" before every block, Hugo doesn't)
   if (text.substring(0, 3) === "```") txtBefore = "";
@@ -346,7 +348,7 @@ function addImageToZip(filePath) {
         console.log(base64)
       }
         
-  }, 50);
+  }, 100);
 }
 
 //FIXME don't get it, but it works

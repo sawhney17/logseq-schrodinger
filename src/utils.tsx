@@ -290,20 +290,30 @@ async function parseText(block: BlockEntity) {
   //indent text + add newline after block
   text = txtBefore + text + txtAfter;
 
-  //conversion of links to hugo syntax https://gohugo.io/content-management/cross-references/
+  // conversion of links to hugo syntax https://gohugo.io/content-management/cross-references/
   if (logseq.settings.linkFormat == "Hugo Format") {
-    text = await text.replaceAll(/\[\[.*?\]\]/g, async (match) => {
-      const txt = match.substring(2, match.length - 2);
-      if ((await logseq.Editor.getPage(txt)) != null) {
-        return `[${txt}]({{< ref ${txt.replaceAll(" ", "_")} >}})`;
-      } else {
-        errorTracker.push(
-          `${txt} is not a valid page name, will be converted from link to text`
-        );
-        return txt;
-      }
-    });
+    let txt;
+    let matches = text.match(/\[\[.*?\]\]/g)
+    for (const x in matches){
+      const match = matches[x] //remove first 2 characters and last 2 characters from match
+      txt = match.substring(2, match.length - 2)
+      const checkPage = async () => {
+        if ((await logseq.Editor.getPage(txt)) != null) {
+          return `[${txt}]({{< ref ${txt.replaceAll(" ", "_")} >}})`;
+        } else {
+          errorTracker.push(
+            `${txt} is not a valid page name, will be converted from link to text`
+          );
+          return txt;
+        }
+      };
+      const replacer = await checkPage()
+      text = text.replace(match, replacer)
+      
+    }
+    
   }
+  console.log(text)
   if (logseq.settings.linkFormat == "Without brackets") {
     text = text.replaceAll("[[", "");
     text = text.replaceAll("]]", "");

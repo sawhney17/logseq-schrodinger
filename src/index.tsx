@@ -22,6 +22,15 @@ let settings: SettingSchemaDesc[] = [
       "How would you like Logseq's internal links to be formatted, hugo's native style for internal links, logseq style with brackets or just as text with brackets removed?",
     default: "Hugo Format",
   },
+  {
+    key: "bulletHandling",
+    type: "enum",
+    enumChoices: ["Convert Bullets", "Remove All Bullets"], 
+    enumPicker: "radio",
+    title: "How would you like Logseq's bullets to be handled",
+    description: "How would you like Logseq's bullets to be handled, convert to hugo's native style or remove all bullets?",
+    default: "Convert Bullets",
+  }
 ];
 const main = async () => {
   console.log("plugin loade2d");

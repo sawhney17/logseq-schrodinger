@@ -28,10 +28,10 @@ export async function getAllPublicPages_orig() {
     });
     for (const x in mappedResults) {
       if (x != `${mappedResults.length - 1}`) {
-        console.log(`DB ${x} (≠)`, mappedResults[x])
+        console.log(`DB ${x} (≠)`, mappedResults[x]);
         getBlocksInPage({ page: mappedResults[x] }, false, false);
       } else {
-        console.log(`DB ${x}`, mappedResults[x])
+        console.log(`DB ${x}`, mappedResults[x]);
         getBlocksInPage({ page: mappedResults[x] }, false, true);
       }
     }
@@ -40,14 +40,15 @@ export async function getAllPublicPages_orig() {
 
 export async function getAllPublicPages() {
   //needs to be both public, and a page (with a name)
-  const query = "[:find (pull ?p [*]) :where [?p :block/properties ?pr] [(get ?pr :public) ?t] [(= true ?t)][?p :block/name ?n]]"
-  let qresult = await logseq.DB.datascriptQuery(query)
-      qresult = qresult?.flat()
+  const query =
+    "[:find (pull ?p [*]) :where [?p :block/properties ?pr] [(get ?pr :public) ?t] [(= true ?t)][?p :block/name ?n]]";
+  let qresult = await logseq.DB.datascriptQuery(query);
+  qresult = qresult?.flat();
   for (const x in qresult) {
     if (x != `${qresult.length - 1}`) {
-      await getBlocksInPage({page: qresult[x]}, false, false);
+      await getBlocksInPage({ page: qresult[x] }, false, false);
     } else {
-      await getBlocksInPage({page: qresult[x]}, false, true);
+      await getBlocksInPage({ page: qresult[x] }, false, true);
     }
   }
 }
@@ -57,21 +58,19 @@ function hugoDate(timestamp) {
 
   //if date.getdate does not have a zero, add A ZERO BEFORE IT
   let month;
-  if (date.getMonth() + 1 < 10){
-    month = `0${date.getMonth() + 1}`
-  }
-  else{
-    month = `${date.getMonth() + 1}`
+  if (date.getMonth() + 1 < 10) {
+    month = `0${date.getMonth() + 1}`;
+  } else {
+    month = `${date.getMonth() + 1}`;
   }
   let day;
-  if (date.getDate() < 10){
-    day = `0${date.getDate()}`
+  if (date.getDate() < 10) {
+    day = `0${date.getDate()}`;
+  } else {
+    day = `${date.getDate()}`;
   }
-  else{
-    day = `${date.getDate()}`
-  }
-  
-  return `${date.getFullYear()}-${month}-${day}`
+
+  return `${date.getFullYear()}-${month}-${day}`;
 }
 
 //parse files meta-data
@@ -80,29 +79,31 @@ async function parseMeta(
   tagsArray = [],
   dateArray = [],
   titleDetails = [],
-  categoriesArray = []) 
-  {
+  categoriesArray = []
+) {
   // console.log("DB curPage", curPage)
   // console.log("Hi")
   let propList = [];
 
   //get all properties - fix later
-  if (curPage?.page.properties != undefined){
+  if (curPage?.page.properties != undefined) {
     propList = curPage?.page.properties;
   }
   //Title
   //FIXME is filename used?
-  propList.title = curPage.page["original-name"]
-  console.log(curPage)
-  console.log(propList.title)
-  console.log(propList)
+  propList.title = curPage.page["original-name"];
+  console.log(curPage);
+  console.log(propList.title);
+  console.log(propList);
   if (titleDetails.length > 0) {
     propList.title = titleDetails[0].noteName;
     propList.fileName = titleDetails[1].hugoFileName;
   }
-  
+
   //Tags
-  propList.tags = (curPage?.page.properties.tags) ? (curPage?.page.properties.tags) : []
+  propList.tags = curPage?.page.properties.tags
+    ? curPage?.page.properties.tags
+    : [];
   if (tagsArray != []) {
     let formattedTagsArray = [];
     for (const tag in tagsArray) {
@@ -110,17 +111,21 @@ async function parseMeta(
     }
     if (propList.tags != undefined) {
       for (const tag in formattedTagsArray) {
-        console.log(propList)
+        console.log(propList);
         propList.tags.push(formattedTagsArray[tag]);
       }
     } else {
       propList.tags = formattedTagsArray;
     }
   }
-  
+
   //Categories - 2 possible spellings!
-  const tmpCat = (curPage?.page.properties.category) ? (curPage?.page.properties.category) : []
-  propList.categories = (curPage?.page.properties.categories) ? curPage?.page.properties.categories : tmpCat
+  const tmpCat = curPage?.page.properties.category
+    ? curPage?.page.properties.category
+    : [];
+  propList.categories = curPage?.page.properties.categories
+    ? curPage?.page.properties.categories
+    : tmpCat;
   if (categoriesArray != []) {
     let formattedCategoriesArray = [];
     for (const category in categoriesArray) {
@@ -134,32 +139,36 @@ async function parseMeta(
       propList.categories = formattedCategoriesArray;
     }
   }
-  
+
   //Date - if not defined, convert Logseq timestamp
-  propList.date = (curPage?.page.properties.date) ? (curPage?.page.properties.date) : hugoDate(curPage.page["created-at"])
-  propList.lastMod = (curPage?.page.properties.lastmod) ? curPage?.page.properties.lastmod : hugoDate(curPage.page["updated-at"])
+  propList.date = curPage?.page.properties.date
+    ? curPage?.page.properties.date
+    : hugoDate(curPage.page["created-at"]);
+  propList.lastMod = curPage?.page.properties.lastmod
+    ? curPage?.page.properties.lastmod
+    : hugoDate(curPage.page["updated-at"]);
   if (dateArray.length > 0) {
     propList.date = dateArray[1].originalDate;
     propList.lastMod = dateArray[0].updatedDate;
   }
-  
+
   //convert propList to Hugo yaml
   // https://gohugo.io/content-management/front-matter/
   // console.log("DB proplist", propList)
   let ret = `---`;
   for (let [prop, value] of Object.entries(propList)) {
     if (Array.isArray(value)) {
-      ret += `\n${prop}:`
-      value.forEach(element => ret += `\n- ${element}`)
+      ret += `\n${prop}:`;
+      value.forEach((element) => (ret += `\n- ${element}`));
     } else {
-      ret += `\n${prop}: ${value}`
+      ret += `\n${prop}: ${value}`;
     }
   }
   ret += "\n---";
   // console.log("Metadata:",ret)
-  return ret
+  return ret;
 }
-  
+
 export async function getBlocksInPage(
   e,
   singleFile,
@@ -176,23 +185,36 @@ export async function getBlocksInPage(
     curPage["original-name"] = curPage.originalName;
   }
 
-  const docTree = await logseq.Editor.getPageBlocksTree(curPage["original-name"]);
+  const docTree = await logseq.Editor.getPageBlocksTree(
+    curPage["original-name"]
+  );
 
-  const metaData = await parseMeta(e, tagsArray, dateArray, titleDetails, categoriesArray);
+  const metaData = await parseMeta(
+    e,
+    tagsArray,
+    dateArray,
+    titleDetails,
+    categoriesArray
+  );
   // parse page-content
 
   let finalString = await parsePage(metaData, docTree);
-  // console.log("DB finalstring", finalString) 
+  // console.log("DB finalstring", finalString)
 
   // FIXME ??
-  if (errorTracker.length > 0) {}
   if (singleFile) {
     logseq.hideMainUI();
     handleClosePopup();
     download(`${titleDetails[1].hugoFileName}.md`, finalString);
   } else {
-    console.log(e["original-name"])
-    zip.file(`${curPage["original-name"].replaceAll(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')}.md`, finalString);
+    console.log(e["original-name"]);
+    zip.file(
+      `pages/${curPage["original-name"].replaceAll(
+        /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
+        ""
+      )}.md`,
+      finalString
+    );
 
     if (isLast) {
       setTimeout(() => {
@@ -235,14 +257,14 @@ async function parseText(block: BlockEntity) {
   });
 
   //Get regex to check if text contains a md image
-  const reImage = /!\[.*?\]\((.*?)\)/g  
+  const reImage = /!\[.*?\]\((.*?)\)/g;
   try {
     text.match(reImage).forEach((element) => {
       element.match(/(?<=!\[.*\])(.*)/g).forEach((match) => {
         let finalLink = match.substring(1, match.length - 1);
         // return (match.substring(1, match.length - 1))
         text = text.replace(match, match.toLowerCase());
-        if (!finalLink.includes("http")|| !finalLink.includes(".pdf")) {
+        if (!finalLink.includes("http") || !finalLink.includes(".pdf")) {
           text = text.replace("../", "/");
           imageTracker.push(finalLink);
           addImageToZip(finalLink);
@@ -253,11 +275,12 @@ async function parseText(block: BlockEntity) {
   // Add indention — level zero is stripped of "-", rest are lists
   // Experiment, no more lists, unless + or numbers
   // (unless they're not)
-
-  if (block.level > 1) {
-    txtBefore = " ".repeat((block.level - 1) * 2) + "+ ";
-    // txtBefore = "\n" + txtBefore
-    if (prevBlock.level === block.level) txtAfter = "";
+  if (logseq.settings.bulletHandling == "Convert Bullets") {
+    if (block.level > 1) {
+      txtBefore = " ".repeat((block.level - 1) * 2) + "+ ";
+      // txtBefore = "\n" + txtBefore
+      if (prevBlock.level === block.level) txtAfter = "";
+    }
   }
   if (prevBlock.level === block.level) txtAfter = "";
   //exceptions (logseq has "-" before every block, Hugo doesn't)
@@ -287,8 +310,8 @@ async function parseText(block: BlockEntity) {
   }
 
   //highlight text, not supported in hugo by default!
-  re = /(==(.*?)==)/gm
-  text = text.replace(re, "{{< logseq/mark >}}$2{{< / logseq/mark >}}")
+  re = /(==(.*?)==)/gm;
+  text = text.replace(re, "{{< logseq/mark >}}$2{{< / logseq/mark >}}");
 
   re = /#\+BEGIN_([A-Z]*).*\n(.*)\n#\+END_.*/gm;
   text = text.replace(re, "{{< logseq/org$1 >}}$2{{< / logseq/org$1 >}}");
@@ -338,20 +361,18 @@ function addImageToZip(filePath) {
 
   document.body.appendChild(element);
   setTimeout(() => {
-      var base64 = getBase64Image(element);
-      document.body.removeChild(element);
-      if (base64 != "data:,") {
-        zip.file(
-          "assets/" +
-            filePath.split("/")[filePath.split("/").length - 1].toLowerCase(),
-          base64,
-          { base64: true }
-        );
-      }
-      else{
-        console.log(base64)
-      }
-        
+    var base64 = getBase64Image(element);
+    document.body.removeChild(element);
+    if (base64 != "data:,") {
+      zip.file(
+        "assets/" +
+          filePath.split("/")[filePath.split("/").length - 1].toLowerCase(),
+        base64,
+        { base64: true }
+      );
+    } else {
+      console.log(base64);
+    }
   }, 100);
 }
 

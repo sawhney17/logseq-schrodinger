@@ -16,7 +16,7 @@ import { title } from "process";
 var errorTracker = [];
 var zip = new JSZip();
 var imageTracker = [];
-
+let qresult;
 //Retired function
 //I kept on missing pages?!?!?!
 //Never figured out why
@@ -42,7 +42,7 @@ export async function getAllPublicPages() {
   //needs to be both public, and a page (with a name)
   const query =
     "[:find (pull ?p [*]) :where [?p :block/properties ?pr] [(get ?pr :public) ?t] [(= true ?t)][?p :block/name ?n]]";
-  let qresult = await logseq.DB.datascriptQuery(query);
+  qresult = await logseq.DB.datascriptQuery(query);
   qresult = qresult?.flat();
   for (const x in qresult) {
     if (x != `${qresult.length - 1}`) {
@@ -176,7 +176,8 @@ export async function getBlocksInPage(
   tagsArray = [],
   dateArray = [],
   titleDetails = [],
-  categoriesArray = []
+  categoriesArray = [],
+  qresult = []
 ) {
   //if e.page.originalName is undefined, set page to equal e.page.original-name
   // console.log("DB e", e)
@@ -292,28 +293,24 @@ async function parseText(block: BlockEntity) {
 
   // conversion of links to hugo syntax https://gohugo.io/content-management/cross-references/
   if (logseq.settings.linkFormat == "Hugo Format") {
-    let txt;
-    let matches = text.match(/\[\[.*?\]\]/g)
-    for (const x in matches){
-      const match = matches[x] //remove first 2 characters and last 2 characters from match
-      txt = match.substring(2, match.length - 2)
-      const checkPage = async () => {
-        if ((await logseq.Editor.getPage(txt)) != null) {
-          return `[${txt}]({{< ref ${txt.replaceAll(" ", "_")} >}})`;
-        } else {
-          errorTracker.push(
-            `${txt} is not a valid page name, will be converted from link to text`
-          );
-          return txt;
+    text = text.replaceAll(/\[\[.*?\]\]/g, (match) => {
+      const txt = match.substring(2, match.length - 2);
+      console.log(qresult)
+      for (const x in qresult) {
+        console.log(txt.toUpperCase())
+        console.log(qresult[x]["original-name"].toUpperCase())
+        console.log(txt.toUpperCase() == qresult[x]["original-name"].toUpperCase())
+        if (txt.toUpperCase() == qresult[x]["original-name"].toUpperCase()) {
+          console.log("match")
+          return `[${txt}]({{< ref ${qresult[x]["original-name"].replaceAll(
+            " ",
+            " "
+          )} >}})`;
         }
-      };
-      const replacer = await checkPage()
-      text = text.replace(match, replacer)
-      
-    }
-    
+      }
+      return txt;
+    });
   }
-  console.log(text)
   if (logseq.settings.linkFormat == "Without brackets") {
     text = text.replaceAll("[[", "");
     text = text.replaceAll("]]", "");

@@ -17,6 +17,7 @@ var errorTracker = [];
 var zip = new JSZip();
 var imageTracker = [];
 let qresult;
+
 //Retired function
 //I kept on missing pages?!?!?!
 //Never figured out why
@@ -92,9 +93,9 @@ async function parseMeta(
   //Title
   //FIXME is filename used?
   propList.title = curPage.page["original-name"];
-  console.log(curPage);
-  console.log(propList.title);
-  console.log(propList);
+  // console.log(curPage);
+  // console.log(propList.title);
+  // console.log(propList);
   if (titleDetails.length > 0) {
     propList.title = titleDetails[0].noteName;
     propList.fileName = titleDetails[1].hugoFileName;
@@ -209,8 +210,9 @@ export async function getBlocksInPage(
     download(`${titleDetails[1].hugoFileName}.md`, finalString);
   } else {
     console.log(e["original-name"]);
+    //page looks better in the URL
     zip.file(
-      `pages/${curPage["original-name"].replaceAll(
+      `page/${curPage["original-name"].replaceAll(
         /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
         ""
       )}.md`,
@@ -257,6 +259,22 @@ async function parseText(block: BlockEntity) {
     includeChildren: false,
   });
 
+  //Block refs needs to be at the beginning so the block gets parsed
+  const rxGetId = /\(\(([^)]*)\)\)/;
+  const blockId = rxGetId.exec(text);
+  if (blockId != null) {
+    const block = await logseq.Editor.getBlock(blockId[1], {
+      includeChildren: true,
+    });
+
+    if (block != null) {
+      text = text.replace(
+        `((${blockId[1]}))`,
+        block.content.substring(0, block.content.indexOf("id::"))
+      );
+    }
+  }
+
   //Get regex to check if text contains a md image
   const reImage = /!\[.*?\]\((.*?)\)/g;
   try {
@@ -272,7 +290,9 @@ async function parseText(block: BlockEntity) {
         }
       });
     });
-  } catch (error) {}
+  } catch (error) { }
+
+  // FIXME for now all indention is stripped out
   // Add indention — level zero is stripped of "-", rest are lists
   // Experiment, no more lists, unless + or numbers
   // (unless they're not)
@@ -291,17 +311,36 @@ async function parseText(block: BlockEntity) {
   //indent text + add newline after block
   text = txtBefore + text + txtAfter;
 
+
+  // FIXME This needs to be rewritten (later) so we don't loop all the pages twice
   // conversion of links to hugo syntax https://gohugo.io/content-management/cross-references/
+  // Two kinds of links: [[a link]]
+  //                     [A description]([[a link]])
+  // Regular links are done by Hugo [logseq](https://logseq.com)
+  const reLink:RegExp      = /\[\[.*?\]\]/g
+  const reDescrLink:RegExp = /\[([a-zA-Z ]*?)\]\(\[\[(.*?)\]\]\)/g
+                             //[garden]([[digital garden]])
   if (logseq.settings.linkFormat == "Hugo Format") {
-    text = text.replaceAll(/\[\[.*?\]\]/g, (match) => {
+    if (reDescrLink.test(text)) {
+      text = text.replaceAll(reDescrLink, (result) => {
+        for (const x in qresult) {
+          if (result[2].toLowerCase == qresult[x]["original-name"].toLowerCase) {
+            const txt = reDescrLink.exec(result)
+            return (txt) ? `[${txt[1]}]({{< ref "${txt[2]}" >}})` : ""
+            // return (txt) ? `[${txt[1]}]({{< ref "${txt[2].replaceAll(" ","_")}" >}})` : ""
+          }
+        }
+      });
+    }
+    text = text.replaceAll(reLink, (match) => {
       const txt = match.substring(2, match.length - 2);
-      console.log(qresult)
+      // console.log(qresult)
       for (const x in qresult) {
-        console.log(txt.toUpperCase())
-        console.log(qresult[x]["original-name"].toUpperCase())
-        console.log(txt.toUpperCase() == qresult[x]["original-name"].toUpperCase())
+        // console.log(txt.toUpperCase())
+        // console.log(qresult[x]["original-name"].toUpperCase())
+        // console.log(txt.toUpperCase() == qresult[x]["original-name"].toUpperCase())
         if (txt.toUpperCase() == qresult[x]["original-name"].toUpperCase()) {
-          console.log("match")
+          // console.log("match")
           return `[${txt}]({{< ref "${qresult[x]["original-name"].replaceAll(
             " ",
             " "
@@ -316,7 +355,7 @@ async function parseText(block: BlockEntity) {
     text = text.replaceAll("]]", "");
   }
 
-  //highlight text, not supported in hugo by default!
+  //highlighted text, not supported in hugo by default!
   re = /(==(.*?)==)/gm;
   text = text.replace(re, "{{< logseq/mark >}}$2{{< / logseq/mark >}}");
 
@@ -327,21 +366,6 @@ async function parseText(block: BlockEntity) {
   text = text.replace(/:LOGBOOK:|collapsed:: true/gi, "");
   if (text.includes("CLOCK: [")) {
     text = text.substring(0, text.indexOf("CLOCK: ["));
-  }
-
-  const rxGetId = /\(\(([^)]*)\)\)/;
-  const blockId = rxGetId.exec(text);
-  if (blockId != null) {
-    const block = await logseq.Editor.getBlock(blockId[1], {
-      includeChildren: true,
-    });
-
-    if (block != null) {
-      text = text.replace(
-        `((${blockId[1]}))`,
-        block.content.substring(0, block.content.indexOf("id::"))
-      );
-    }
   }
 
   if (text.indexOf(`\nid:: `) === -1) {

@@ -153,6 +153,12 @@ async function parseMeta(
     propList.lastMod = dateArray[0].updatedDate;
   }
 
+  //these properties should not be exported to Hugo
+  const nope = ["filters", "public"]
+  for (const nono of nope){
+    delete propList[nono]
+  }
+  
   //convert propList to Hugo yaml
   // https://gohugo.io/content-management/front-matter/
   // console.log("DB proplist", propList)
@@ -275,6 +281,8 @@ async function parseText(block: BlockEntity) {
     }
   }
 
+  //FIXME ![image.png](../assets/image_1650196318593_0.png){:class medium, :height 506, :width 321}
+  //Logseq has extra info: height and width that can be used in an image template
   //Get regex to check if text contains a md image
   const reImage = /!\[.*?\]\((.*?)\)/g;
   try {

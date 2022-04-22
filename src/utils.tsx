@@ -11,12 +11,13 @@ import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
 import { handleClosePopup } from "./handleClosePopup";
-import { path } from "./index";
+import { linkFormats, path } from "./index";
 import { title } from "process";
 var errorTracker = [];
 var zip = new JSZip();
 var imageTracker = [];
-let qresult;
+let allPublicPages;
+let allPublicLinks = [] //list of all exported pages
 
 //Retired function
 //I kept on missing pages?!?!?!
@@ -41,13 +42,18 @@ export async function getAllPublicPages() {
   //needs to be both public, and a page (with a name)
   const query =
     "[:find (pull ?p [*]) :where [?p :block/properties ?pr] [(get ?pr :public) ?t] [(= true ?t)][?p :block/name ?n]]";
-  qresult = await logseq.DB.datascriptQuery(query);
-  qresult = qresult?.flat();
-  for (const x in qresult) {
-    if (x != `${qresult.length - 1}`) {
-      await getBlocksInPage({ page: qresult[x] }, false, false);
+  allPublicPages = await logseq.DB.datascriptQuery(query);
+  allPublicPages = allPublicPages?.flat(); //FIXME is this needed?
+
+  for (const x of allPublicPages) {
+    allPublicLinks.push(x["original-name"].toLowerCase())
+  }
+  
+  for (const x in allPublicPages) {
+    if (x != `${allPublicPages.length - 1}`) {
+      await getBlocksInPage({ page: allPublicPages[x] }, false, false);
     } else {
-      await getBlocksInPage({ page: qresult[x] }, false, true);
+      await getBlocksInPage({ page: allPublicPages[x] }, false, true);
     }
   }
 }
@@ -174,7 +180,7 @@ export async function getBlocksInPage(
   dateArray = [],
   titleDetails = [],
   categoriesArray = [],
-  qresult = []
+  allPublicPages = []
 ) {
   //if e.page.originalName is undefined, set page to equal e.page.original-name
   let curPage = e.page;
@@ -203,7 +209,7 @@ export async function getBlocksInPage(
     handleClosePopup();
     download(`${titleDetails[1].hugoFileName}.md`, finalString);
   } else {
-    console.log(`e["original-name"]: ${e["original-name"]}`);
+    // console.log(`e["original-name"]: ${e["original-name"]}`);
     //page looks better in the URL
     zip.file(
       `page/${curPage["original-name"].replaceAll(
@@ -215,7 +221,7 @@ export async function getBlocksInPage(
 
     if (isLast) {
       setTimeout(() => {
-        console.log(zip);
+        // console.log(zip);
         zip.generateAsync({ type: "blob" }).then(function (content) {
           // see FileSaver.js
           saveAs(content, "publicExport.zip");
@@ -239,7 +245,6 @@ async function parsePage(finalString: string, docTree) {
       //parseText will return 'undefined' if a block skipped
       const ret = await parseText(docTree[x])
       if (typeof ret != "undefined") {
-        console.log(`DB ret @@${ret}@@`)
         finalString = `${finalString}\n${ret}`;
       }
 
@@ -248,6 +253,71 @@ async function parsePage(finalString: string, docTree) {
     }
   }
   return finalString;
+}
+
+function parseLinks_old(text: string, allPublicPages) {
+  //returns text withh all links converted
+
+  // FIXME This needs to be rewritten (later) so we don't loop all the pages twice
+  // conversion of links to hugo syntax https://gohugo.io/content-management/cross-references/
+  // Two kinds of links: [[a link]]
+  //                     [A description]([[a link]])
+  // Regular links are done by Hugo [logseq](https://logseq.com)
+  const reLink:RegExp      = /\[\[.*?\]\]/g
+  const reDescrLink:RegExp = /\[([a-zA-Z ]*?)\]\(\[\[(.*?)\]\]\)/g
+                             //[garden]([[digital garden]])
+  if (logseq.settings.linkFormat == "Hugo Format") {
+    if (reDescrLink.test(text)) {
+      text = text.replaceAll(reDescrLink, (result) => {
+        for (const x in allPublicPages) {
+          if (result[2].toLowerCase == allPublicPages[x]["original-name"].toLowerCase) {
+            const txt = reDescrLink.exec(result)
+            return (txt) ? `[${txt[1]}]({{< ref "${txt[2]}" >}})` : ""
+            // return (txt) ? `[${txt[1]}]({{< ref "${txt[2].replaceAll(" ","_")}" >}})` : ""
+          }
+        }
+      });
+    }
+    text = text.replaceAll(reLink, (match) => {
+      const txt = match.substring(2, match.length - 2);
+      for (const x in allPublicPages) {
+        if (txt.toUpperCase() == allPublicPages[x]["original-name"].toUpperCase()) {
+          return `[${txt}]({{< ref "${allPublicPages[x]["original-name"].replaceAll(
+            " ",
+            " "
+          )}" >}})`;
+        }
+      }
+      return txt;
+    });
+  }
+  if (logseq.settings.linkFormat == "Without brackets") {
+    text = text.replaceAll("[[", "");
+    text = text.replaceAll("]]", "");
+  }
+  return text
+}
+
+function parseLinks(text: string, allPublicPages) {
+  //returns text with all links converted
+
+  // conversion of links to hugo syntax https://gohugo.io/content-management/cross-references/
+  // Two kinds of links: [[a link]]
+  //                     [A description]([[a link]])
+  // Regular links are done by Hugo [logseq](https://logseq.com)
+  const reLink:RegExp      = /\[\[(.*?)\]\]/gmi
+  const reDescrLink:RegExp = /\[([a-zA-Z ]*?)\]\(\[\[(.*?)\]\]\)/gmi
+
+  // FIXME why doesn't this work?
+  // if (! reDescrLink.test(text) && ! reLink.test(text)) return text
+  
+  let result
+  while(result = (reDescrLink.exec(text) || reLink.exec(text))) {
+    if (allPublicLinks.includes(result[result.length - 1].toLowerCase())) {
+      text = text.replace(result[0],`[${result[1]}]({{< ref "${result[result.length - 1]}" >}})`)
+    }
+  } 
+  return text
 }
 
 async function parseText(block: BlockEntity) {
@@ -259,9 +329,9 @@ async function parseText(block: BlockEntity) {
   let txtAfter: string = "\n";
   const prevBlock: BlockEntity = await logseq.Editor.getBlock(block.left.id, {
     includeChildren: false,
-  });
+  });  
 
-  //Block refs needs to be at the beginning so the block gets parsed
+  //Block refs - needs to be at the beginning so the block gets parsed
   //FIXME they need some indicator that it *was* an embed
   const rxGetId = /\(\(([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\)\)/;
   const rxGetEd = /{{embed \(\(([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\)\)}}/;
@@ -280,9 +350,10 @@ async function parseText(block: BlockEntity) {
     }
   }
 
-  //Skip task markers
+  //task markers - skip
   if (block.marker && ! logseq.settings.exportTasks ) return
 
+  //Images
   //FIXME ![image.png](../assets/image_1650196318593_0.png){:class medium, :height 506, :width 321}
   //Logseq has extra info: height and width that can be used in an image template
   //Get regex to check if text contains a md image
@@ -321,44 +392,8 @@ async function parseText(block: BlockEntity) {
   //indent text + add newline after block
   text = txtBefore + text + txtAfter;
 
-
-  // FIXME This needs to be rewritten (later) so we don't loop all the pages twice
-  // conversion of links to hugo syntax https://gohugo.io/content-management/cross-references/
-  // Two kinds of links: [[a link]]
-  //                     [A description]([[a link]])
-  // Regular links are done by Hugo [logseq](https://logseq.com)
-  const reLink:RegExp      = /\[\[.*?\]\]/g
-  const reDescrLink:RegExp = /\[([a-zA-Z ]*?)\]\(\[\[(.*?)\]\]\)/g
-                             //[garden]([[digital garden]])
-  if (logseq.settings.linkFormat == "Hugo Format") {
-    if (reDescrLink.test(text)) {
-      text = text.replaceAll(reDescrLink, (result) => {
-        for (const x in qresult) {
-          if (result[2].toLowerCase == qresult[x]["original-name"].toLowerCase) {
-            const txt = reDescrLink.exec(result)
-            return (txt) ? `[${txt[1]}]({{< ref "${txt[2]}" >}})` : ""
-            // return (txt) ? `[${txt[1]}]({{< ref "${txt[2].replaceAll(" ","_")}" >}})` : ""
-          }
-        }
-      });
-    }
-    text = text.replaceAll(reLink, (match) => {
-      const txt = match.substring(2, match.length - 2);
-      for (const x in qresult) {
-        if (txt.toUpperCase() == qresult[x]["original-name"].toUpperCase()) {
-          return `[${txt}]({{< ref "${qresult[x]["original-name"].replaceAll(
-            " ",
-            " "
-          )}" >}})`;
-        }
-      }
-      return txt;
-    });
-  }
-  if (logseq.settings.linkFormat == "Without brackets") {
-    text = text.replaceAll("[[", "");
-    text = text.replaceAll("]]", "");
-  }
+  //internal links
+  text = parseLinks(text, allPublicPages)
 
   //highlighted text, not supported in hugo by default!
   re = /(==(.*?)==)/gm;
@@ -408,7 +443,7 @@ function addImageToZip(filePath) {
         { base64: true }
       );
     } else {
-      console.log(base64);
+      // console.log(base64);
     }
   }, 100);
 }

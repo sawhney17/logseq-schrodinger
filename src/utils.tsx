@@ -349,7 +349,7 @@ async function parseText(block: BlockEntity) {
       )
     }
   }
-
+  
   //task markers - skip
   if (block.marker && ! logseq.settings.exportTasks ) return
 

@@ -30,7 +30,15 @@ let settings: SettingSchemaDesc[] = [
     title: "How would you like Logseq's bullets to be handled",
     description: "How would you like Logseq's bullets to be handled, convert to hugo's native style or remove all bullets?",
     default: "Convert Bullets",
+  },
+  {
+    key: "exportTasks",
+    type: "boolean",
+    title: "Do you want tasks to exported to Hugo?",
+    description: "Yes, blocks with tasks will be exported: (TODO DOING DONE LATER NOW WAITING)",
+    default: false,
   }
+
 ];
 const main = async () => {
   console.log("Logseq Schrödinger plugin loaded");

@@ -29,10 +29,8 @@ export async function getAllPublicPages_orig() {
     });
     for (const x in mappedResults) {
       if (x != `${mappedResults.length - 1}`) {
-        console.log(`DB ${x} (≠)`, mappedResults[x]);
         getBlocksInPage({ page: mappedResults[x] }, false, false);
       } else {
-        console.log(`DB ${x}`, mappedResults[x]);
         getBlocksInPage({ page: mappedResults[x] }, false, true);
       }
     }
@@ -82,8 +80,6 @@ async function parseMeta(
   titleDetails = [],
   categoriesArray = []
 ) {
-  // console.log("DB curPage", curPage)
-  // console.log("Hi")
   let propList = [];
 
   //get all properties - fix later
@@ -93,9 +89,6 @@ async function parseMeta(
   //Title
   //FIXME is filename used?
   propList.title = curPage.page["original-name"];
-  // console.log(curPage);
-  // console.log(propList.title);
-  // console.log(propList);
   if (titleDetails.length > 0) {
     propList.title = titleDetails[0].noteName;
     propList.fileName = titleDetails[1].hugoFileName;
@@ -112,7 +105,6 @@ async function parseMeta(
     }
     if (propList.tags != undefined) {
       for (const tag in formattedTagsArray) {
-        console.log(propList);
         propList.tags.push(formattedTagsArray[tag]);
       }
     } else {
@@ -161,7 +153,6 @@ async function parseMeta(
   
   //convert propList to Hugo yaml
   // https://gohugo.io/content-management/front-matter/
-  // console.log("DB proplist", propList)
   let ret = `---`;
   for (let [prop, value] of Object.entries(propList)) {
     if (Array.isArray(value)) {
@@ -172,7 +163,6 @@ async function parseMeta(
     }
   }
   ret += "\n---";
-  // console.log("Metadata:",ret)
   return ret;
 }
 
@@ -187,7 +177,6 @@ export async function getBlocksInPage(
   qresult = []
 ) {
   //if e.page.originalName is undefined, set page to equal e.page.original-name
-  // console.log("DB e", e)
   let curPage = e.page;
   if (curPage.originalName != undefined) {
     curPage["original-name"] = curPage.originalName;
@@ -207,7 +196,6 @@ export async function getBlocksInPage(
   // parse page-content
 
   let finalString = await parsePage(metaData, docTree);
-  // console.log("DB finalstring", finalString)
 
   // FIXME ??
   if (singleFile) {
@@ -215,7 +203,7 @@ export async function getBlocksInPage(
     handleClosePopup();
     download(`${titleDetails[1].hugoFileName}.md`, finalString);
   } else {
-    console.log(e["original-name"]);
+    console.log(`e["original-name"]: ${e["original-name"]}`);
     //page looks better in the URL
     zip.file(
       `page/${curPage["original-name"].replaceAll(
@@ -247,7 +235,14 @@ async function parsePage(finalString: string, docTree) {
   for (const x in docTree) {
     // skip meta-data
     if (!(parseInt(x) === 0 && docTree[x].level === 1)) {
-      finalString = `${finalString}\n${await parseText(docTree[x])}`;
+
+      //parseText will return 'undefined' if a block skipped
+      const ret = await parseText(docTree[x])
+      if (typeof ret != "undefined") {
+        console.log(`DB ret @@${ret}@@`)
+        finalString = `${finalString}\n${ret}`;
+      }
+
       if (docTree[x].children.length > 0)
         finalString = await parsePage(finalString, docTree[x].children);
     }
@@ -256,6 +251,7 @@ async function parsePage(finalString: string, docTree) {
 }
 
 async function parseText(block: BlockEntity) {
+  //returns either a hugo block or `undefined`
   let re: RegExp;
   let text = block.content;
   // console.log("block", block)
@@ -280,6 +276,9 @@ async function parseText(block: BlockEntity) {
       );
     }
   }
+
+  //Skip task markers
+  if (block.marker && ! logseq.settings.exportTasks ) return
 
   //FIXME ![image.png](../assets/image_1650196318593_0.png){:class medium, :height 506, :width 321}
   //Logseq has extra info: height and width that can be used in an image template
@@ -342,13 +341,8 @@ async function parseText(block: BlockEntity) {
     }
     text = text.replaceAll(reLink, (match) => {
       const txt = match.substring(2, match.length - 2);
-      // console.log(qresult)
       for (const x in qresult) {
-        // console.log(txt.toUpperCase())
-        // console.log(qresult[x]["original-name"].toUpperCase())
-        // console.log(txt.toUpperCase() == qresult[x]["original-name"].toUpperCase())
         if (txt.toUpperCase() == qresult[x]["original-name"].toUpperCase()) {
-          // console.log("match")
           return `[${txt}]({{< ref "${qresult[x]["original-name"].replaceAll(
             " ",
             " "
@@ -382,6 +376,7 @@ async function parseText(block: BlockEntity) {
     return text.substring(0, text.indexOf(`\nid:: `));
   }
 }
+
 function getBase64Image(img) {
   var canvas = document.createElement("canvas");
   canvas.width = img.width;
@@ -417,7 +412,6 @@ function addImageToZip(filePath) {
 
 //FIXME don't get it, but it works
 function download(filename, text) {
-  // console.log("DB:download", filename, text)
   var element = document.createElement("a");
   element.setAttribute(
     "href",

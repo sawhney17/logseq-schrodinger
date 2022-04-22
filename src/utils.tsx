@@ -262,18 +262,21 @@ async function parseText(block: BlockEntity) {
   });
 
   //Block refs needs to be at the beginning so the block gets parsed
-  const rxGetId = /\(\(([^)]*)\)\)/;
-  const blockId = rxGetId.exec(text);
+  //FIXME they need some indicator that it *was* an embed
+  const rxGetId = /\(\(([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\)\)/;
+  const rxGetEd = /{{embed \(\(([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\)\)}}/;
+  const blockId = ( rxGetEd.exec(text) || rxGetId.exec(text) )
   if (blockId != null) {
     const block = await logseq.Editor.getBlock(blockId[1], {
       includeChildren: true,
     });
 
     if (block != null) {
+      // console.log("DB blockId", blockId)
       text = text.replace(
-        `((${blockId[1]}))`,
+        blockId[0],
         block.content.substring(0, block.content.indexOf("id::"))
-      );
+      )
     }
   }
 

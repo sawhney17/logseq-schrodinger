@@ -221,7 +221,7 @@ export async function getBlocksInPage(
 
     if (isLast) {
       setTimeout(() => {
-        // console.log(zip);
+        console.log(zip);
         zip.generateAsync({ type: "blob" }).then(function (content) {
           // see FileSaver.js
           saveAs(content, "publicExport.zip");
@@ -435,6 +435,7 @@ function addImageToZip(filePath) {
   setTimeout(() => {
     var base64 = getBase64Image(element);
     document.body.removeChild(element);
+    console.log(base64)
     if (base64 != "data:,") {
       zip.file(
         "assets/" +

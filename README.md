@@ -7,7 +7,6 @@
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
 
-
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
@@ -31,7 +30,6 @@
   </p>
 </div>
 
-
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
@@ -53,22 +51,21 @@
   </ol>
 </details>
 
-
 <!-- ABOUT THE PROJECT -->
+
 ## About The Project
 
 [![Product Name Screen Shot][product-screenshot]](https://github.com/sawhney17/logseq-schrodinger/)
 
-[Logseq](https://logseq.com) is a great PKM (personal knowledge management) tool, but keeping your knowledge for yourself only get s you so far. As [Erwin Schrödinger](https://simple.wikipedia.org/wiki/Erwin_Schrödinger) stated:
+[Logseq](https://logseq.com) is a great PKM (personal knowledge management) tool, but keeping your knowledge for yourself only gets you so far. As [Erwin Schrödinger](https://simple.wikipedia.org/wiki/Erwin_Schrödinger) stated:
 
 > If a note is not published, does it really exist? — Erwin Schrödinger
 
 Knowledge is meant to be treasured and expanded, but before all shared. This plugin helps to make that possible, or at least easier.
 
-**Note:** This project is very much a work-in-progress. Please report <a href="#issues">sssues</a> and questions. 
+**Note:** This project is very much a work-in-progress. Please report <a href="#issues">issues</a> and questions.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 <!-- GETTING STARTED -->
 
@@ -81,7 +78,7 @@ Knowledge is meant to be treasured and expanded, but before all shared. This plu
 - Restart the application.
 - Click 3 dots and go to Plugins (or `Esc t p`).
 
-### Install plugin from the Marketplace (recommended) 
+### Install plugin from the Marketplace (recommended)
 
 - Click the `Marketplace` button and then click `Plugins`.
 - Find the plugin and click `Install`.
@@ -92,13 +89,10 @@ Knowledge is meant to be treasured and expanded, but before all shared. This plu
 - Unzip it.
 - Click Load unpacked plugin, and select destination directory to the unzipped folder.
 
-
-
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-
-
 <!-- Configuration -->
+
 ## Configuration
 
 - Click the 3 dots in the righthand corner and go to **Settings**.
@@ -111,56 +105,51 @@ Knowledge is meant to be treasured and expanded, but before all shared. This plu
 
 ### Meta-data
 
-The plugin uses YAML for the Hugo [front-matter](https://gohugo.io/content-management/front-matter/). It will convert Logseq page-properties to Hugo front matter.
+This plugin uses YAML for the Hugo [front-matter](https://gohugo.io/content-management/front-matter/). It will convert Logseq page-properties to Hugo front matter.
 
-Logseq *keywords* are lowercase converted to Hugo keywords, and **category** in Logseq is translated to *categories* for use with Hugo. Logseq *links* (`[[like_this]]`) are stripped of `[[` and `]]`.
+Logseq _keywords_ are lowercase converted to Hugo keywords, and **category** in Logseq is translated to _categories_ for use with Hugo. Logseq _links_ (`[[like_this]]`) are stripped of `[[` and `]]`.
 
-All other *keywords* are just converted to Hugo *keywords*. 
+All other _keywords_ are just converted to Hugo _keywords_.
 
-For now you *must* add **date** with the posts date in the form of "2012-04-06" to your Logseq page-properties.
+For now you _must_ add **date** with the posts date in the form of "2012-04-06" to your Logseq page-properties.
 
-``markdown
+```markdown
 date:: 2012-04-06
-``
+```
 
 <h3 id="configuring_hugo">Configuring Hugo</h3>
 
 [Hugo][hugo] does not by default support backlinks. Use a snippet like the following to simulate backlinks. It will parse every page for local links. This snippet should be placed in `~yourhugo/layouts/partials/backlinks.html`.
 
 ```html
-{{ $re := $.File.BaseFileName }}
-{{ $backlinks := slice }}
-{{ range where .Site.RegularPages "Type" "page" }}
-   {{ if and (findRE $re .RawContent) (not (eq $re .File.BaseFileName)) }}
-      {{ $backlinks = $backlinks | append . }}
-   {{ end }}
-{{ end }}
-
-{{ if gt (len $backlinks) 0 }}
-  <aside>
-    <h3>Backlinks</h3>
-    <div class="backlinks">
-      <ul>
-       {{ range $backlinks }}
-          <li class="capitalize"><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
-       {{ end }}
-     </ul>
-    </div>
-  </aside>
-{{ else  }}
-  <aside>
-    <h4>No notes link to this note</h4>
-  </aside>
+{{ $re := $.File.BaseFileName }} {{ $backlinks := slice }} {{ range where
+.Site.RegularPages "Type" "page" }} {{ if and (findRE $re .RawContent) (not (eq
+$re .File.BaseFileName)) }} {{ $backlinks = $backlinks | append . }} {{ end }}
+{{ end }} {{ if gt (len $backlinks) 0 }}
+<aside>
+  <h3>Backlinks</h3>
+  <div class="backlinks">
+    <ul>
+      {{ range $backlinks }}
+      <li class="capitalize"><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+      {{ end }}
+    </ul>
+  </div>
+</aside>
+{{ else }}
+<aside>
+  <h4>No notes link to this note</h4>
+</aside>
 {{ end }}
 
 <aside class="related">
-  {{ $related := .Site.RegularPages.Related . | complement $backlinks | first 3 -}}
-  {{ with $related -}}
+  {{ $related := .Site.RegularPages.Related . | complement $backlinks | first 3
+  -}} {{ with $related -}}
   <h3>slightly related</h3>
   <ul>
-  {{ range . -}}
-  <li class="capitalize"><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
-  {{ end -}}
+    {{ range . -}}
+    <li class="capitalize"><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+    {{ end -}}
   </ul>
   {{ end -}}
 </aside>
@@ -183,7 +172,7 @@ Logseq has several built-in adminitions, namely:
 
 These get converted to:
 
-``` markdown
+```markdown
 {{< logseq/orgCAUTION >}}Caution here{{< / logseq/orgCAUTION >}}
 {{< logseq/orgEXAMPLE >}}This is an example{{< / logseq/orgEXAMPLE >}}
 {{< logseq/orgIMPORTANT >}}This is important{{< / logseq/orgIMPORTANT >}}
@@ -194,30 +183,40 @@ These get converted to:
 {{< logseq/orgWARNING >}}This is a warning{{< / logseq/orgWARNING >}}
 ```
 
-So Hugo needs in `$HUGO/layouts/shortcodes/logseq/`:
+So Hugo needs those in `~yourhugo/layouts/shortcodes/logseq/`:
 
-```
-orgCAUTION.html   
-orgEXAMPLE.html   
-orgIMPORTANT.html 
-orgNOTE.html      
-orgPINNED.html    
-orgQUOTE.html     
-orgTIP.html       
+```txt
+orgCAUTION.html
+orgEXAMPLE.html
+orgIMPORTANT.html
+orgNOTE.html
+orgPINNED.html
+orgQUOTE.html
+orgTIP.html
 orgWARNING.html
 ```
 
 And they should contain something along the lines of:
 
 ```html
-<div class="caution {{ .Get 0 }}">
-    {{ .Inner | $.Page.RenderString }}
-</div>
+<div class="caution {{ .Get 0 }}">{{ .Inner | $.Page.RenderString }}</div>
 ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+## Website templates
+
+There are some basic website templates you can take it as a reference.
+
+1. [logseq-hugo-template](https://github.com/sawhney17/logseq-hugo-template/), by [sawhney17](https://github.com/sawhney17).
+   1. You can host your personal website with your favorite web hosting providers.
+2. [Logseq-Hugo-Template](https://github.com/CharlesChiuGit/Logseq-Hugo-Template), by [CharlesChiuGit](https://github.com/CharlesChiuGit).
+   1. Host your personal website with free [GitHub pages](https://pages.github.com/).
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 <!-- Issues -->
+
 ## Issues
 
 See the [open issues](https://github.com/sawhney17/logseq-schrodinger/issues) for a full list of proposed features (and known issues).
@@ -225,19 +224,18 @@ See the [open issues](https://github.com/sawhney17/logseq-schrodinger/issues) fo
 ### What works
 
 - Local Hugo links (but Logseq uses one folder for everything, so Hugo does too)
-- Block refs(!) — On conversion the block is pulled from the other location 
+- Block refs(!) — On conversion the block is pulled from the other location
 - Images
 - Basic Markdown styling (including highlighting!)
 
-### What is known to *not* work
+### What is known to _not_ work
 
 - Indentation Logseq ➡ Hugo is still a work-in-progress
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-
-
 <!-- CONTRIBUTING -->
+
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -253,20 +251,19 @@ Don't forget to give the project a star! Thanks again!
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-
-
 <!-- LICENSE -->
+
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-
 <!-- CONTACT -->
+
 ## Contact
 
-Aryan Sawhney - [@Aryan Sawhney](https://twitter.com/aryansawhney17) 
+Aryan Sawhney - [@Aryan Sawhney](https://twitter.com/aryansawhney17)
 
 Project Link: [https://github.com/sawhney17/logseq-schrodinger](https://github.com/sawhney17/logseq-schrodinger)
 
@@ -278,6 +275,7 @@ I would like to thank Alex Qwxlea ([@twitter_handle](https://twitter.com/QwxleaA
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
 [contributors-shield]: https://img.shields.io/github/contributors/sawhney17/logseq-schrodinger.svg?style=for-the-badge
 [contributors-url]: https://github.com/sawhney17/logseq-schrodinger/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/sawhney17/logseq-schrodinger.svg?style=for-the-badge

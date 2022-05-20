@@ -395,6 +395,23 @@ async function parseText(block: BlockEntity) {
   //internal links
   text = parseLinks(text, allPublicPages)
 
+  //youtube embed
+  //Change {{youtube url}} via regex
+  const reYoutube = /{{youtube(.*?)}}/g;
+  text = text.replaceAll(reYoutube, (match)=>{
+    const youtubeRegex = /(youtu(?:.*\/v\/|.*v\=|\.be\/))([A-Za-z0-9_\-]{11})/
+    const youtubeId = youtubeRegex.exec(match)
+    if (youtubeId != null) {
+      return `{{< youtube ${youtubeId[2]} >}}`
+    }
+  })
+
+
+  //height and width syntax regex
+  // {:height 239, :width 363}
+  const heightWeightRegex = /{:height\s*[0-9]*,\s*:width\s*[0-9]*}/
+  text = text.replaceAll(heightWeightRegex, "")
+
   //highlighted text, not supported in hugo by default!
   re = /(==(.*?)==)/gm;
   text = text.replace(re, "{{< logseq/mark >}}$2{{< / logseq/mark >}}");

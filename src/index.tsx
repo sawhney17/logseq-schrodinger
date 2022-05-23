@@ -11,18 +11,20 @@ import { handleClosePopup } from "./handleClosePopup";
 import { getAllPublicPages, getBlocksInPage } from "./utils";
 
 export var path = "";
-// export const linkFormats = ["[[Logseq Format]]", "Without brackets"]
+
+const linkFormats = ["[[Logseq Format]]", "Without brackets"]
+
 let settings: SettingSchemaDesc[] = [
-  // {
-  //   key: "linkFormat",
-  //   type: "enum",
-  //   enumChoices: linkFormats,
-  //   enumPicker: "radio",
-  //   title: "How would you like links to be formatted",
-  //   description:
-  //     "Do you want your exported links with or without brackets?",
-  //   default: linkFormats[0],
-  // },
+  {
+    key: "linkFormat",
+    type: "enum",
+    enumChoices: linkFormats,
+    enumPicker: "radio",
+    title: "How would you like links to be formatted",
+    description:
+      "Do you want your exported links with or without brackets? If a page that is linked to is public, the link will automatically be hyperlinked in the hugo export, otherwise, this setting will be applied",
+    default: linkFormats[0],
+  },
   {
     key: "bulletHandling",
     type: "enum",

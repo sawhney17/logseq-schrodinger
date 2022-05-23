@@ -316,8 +316,11 @@ function parseLinks(text: string, allPublicPages) {
     if (allPublicLinks.includes(result[result.length - 1].toLowerCase())) {
       text = text.replace(result[0],`[${result[1]}]({{< ref "${result[result.length - 1]}" >}})`)
     }
-    // else
   } 
+    if (logseq.settings.linkFormat == "Without brackets") {
+      text = text.replaceAll("[[", "");
+      text = text.replaceAll("]]", "");
+    }
   return text
 }
 

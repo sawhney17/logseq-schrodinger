@@ -316,6 +316,7 @@ function parseLinks(text: string, allPublicPages) {
     if (allPublicLinks.includes(result[result.length - 1].toLowerCase())) {
       text = text.replace(result[0],`[${result[1]}]({{< ref "${result[result.length - 1]}" >}})`)
     }
+    // else
   } 
   return text
 }
@@ -409,8 +410,8 @@ async function parseText(block: BlockEntity) {
 
   //height and width syntax regex
   // {:height 239, :width 363}
-  const heightWeightRegex = /{:height\s*[0-9]*,\s*:width\s*[0-9]*}/
-  text = text.replaceAll(heightWeightRegex, "")
+  const heightWidthRegex = /{:height\s*[0-9]*,\s*:width\s*[0-9]*}/g
+  text = text.replaceAll(heightWidthRegex, "")
 
   //highlighted text, not supported in hugo by default!
   re = /(==(.*?)==)/gm;

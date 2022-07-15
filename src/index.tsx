@@ -71,6 +71,10 @@ const main = async () => {
         logseq.toggleMainUI();
         handleClosePopup()
       },
+
+      export () {
+        getAllPublicPages()
+      }
     };
   }
 
@@ -78,6 +82,12 @@ const main = async () => {
   logseq.setMainUIInlineStyle({
     zIndex: 11,
   });
+  logseq.App.registerPageMenuItem(
+    "Export all public pages to hugo",
+    getAllPublicPages
+  );
+
+  
   logseq.App.registerUIItem("toolbar", {
     key: "hugo-single-export",
     template: `
@@ -86,10 +96,15 @@ const main = async () => {
       </a>
     `,
   });
-  logseq.App.registerPageMenuItem(
-    "Export all public pages to hugo",
-    getAllPublicPages
-  );
+  logseq.App.registerUIItem("toolbar", {
+    key: "Export public pages to hugo",
+    template: `
+      <a class="button" data-on-click="export" data-rect>
+        <i class="ti ti-database-export"></i>
+      </a>
+    `,
+  });
+  
   logseq.useSettingsSchema(settings);
   path = (await logseq.App.getCurrentGraph()).path;
 };

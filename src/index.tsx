@@ -97,7 +97,7 @@ const main = async () => {
     `,
   });
   logseq.App.registerUIItem("toolbar", {
-    key: "Export public pages to hugo",
+    key: "export-public-pages-to-hugo",
     template: `
       <a class="button" data-on-click="export" data-rect>
         <i class="ti ti-database-export"></i>

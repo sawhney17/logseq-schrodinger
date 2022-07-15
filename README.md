@@ -22,7 +22,7 @@
     <a href="https://github.com/sawhney17/logseq-schrodinger"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/sawhney17/logseq-schrodinger">View Demo</a>
+    <a href="https://aryansawhney.com/">View Demo</a>
     ·
     <a href="https://github.com/sawhney17/logseq-schrodinger/issues">Report Bug</a>
     ·

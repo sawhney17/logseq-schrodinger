@@ -210,7 +210,7 @@ export async function getBlocksInPage(
     download(`${titleDetails[1].hugoFileName}.md`, finalString);
   } else {
     // console.log(`e["original-name"]: ${e["original-name"]}`);
-    //page looks better in the URL
+    //page looks better in the URL 
     zip.file(
       `pages/${curPage["original-name"].replaceAll(
         /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,

@@ -1,18 +1,18 @@
-import "@logseq/libs";
-import {
-  PageEntity,
-  BlockEntity,
-  SettingSchemaDesc,
-} from "@logseq/libs/dist/LSPlugin";
-import JSZip, { file } from "jszip";
-import { saveAs } from "file-saver";
+import '@logseq/libs';
+
+import { saveAs } from 'file-saver';
+import JSZip, { file } from 'jszip';
+import { title } from 'process';
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+import { BlockEntity, PageEntity, SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin';
+
+import App from './App';
+import { handleClosePopup } from './handleClosePopup';
+import { linkFormats, path } from './index';
+
 export var blocks2 = [];
-import React from "react";
-import ReactDOM from "react-dom";
-import App from "./App";
-import { handleClosePopup } from "./handleClosePopup";
-import { linkFormats, path } from "./index";
-import { title } from "process";
 var errorTracker = [];
 var zip = new JSZip();
 var imageTracker = [];
@@ -314,7 +314,7 @@ function parseLinks(text: string, allPublicPages) {
   let result
   while(result = (reDescrLink.exec(text) || reLink.exec(text))) {
     if (allPublicLinks.includes(result[result.length - 1].toLowerCase())) {
-      text = text.replace(result[0],`[${result[1]}]({{< ref "${result[result.length - 1]}" >}})`)
+      text = text.replace(result[0],`[${result[1]}]({{< ref "/pages/${result[result.length - 1]}" >}})`)
     }
   } 
     if (logseq.settings.linkFormat == "Without brackets") {

@@ -420,7 +420,7 @@ async function parseText(block: BlockEntity) {
   re = /(==(.*?)==)/gm;
   text = text.replace(re, "{{< logseq/mark >}}$2{{< / logseq/mark >}}");
 
-  re = /#\+BEGIN_([A-Z]*).*\n(.*)\n#\+END_.*/gm;
+  re = /#\+BEGIN_([A-Z]*)[^\n]*\n(.*)#\+END_[^\n]*/gms;
   text = text.replace(re, "{{< logseq/org$1 >}}$2{{< / logseq/org$1 >}}");
   // text = text.toLowerCase();
 

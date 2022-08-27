@@ -324,6 +324,42 @@ function parseLinks(text: string, allPublicPages) {
   return text
 }
 
+async function parseNamespaces(text: string, blockLevel: number) {
+  const namespace:RegExp = /{{namespace\s([^}]+)}}/gmi
+
+  let result
+  while (result = (namespace.exec(text))) {
+    const currentNamespaceName = result[result.length - 1];
+
+    const query =
+      `[:find (pull ?c [*]) :where [?p :block/name "${currentNamespaceName.toLowerCase()}"] [?c :block/namespace ?p]]`;
+    let namespacePages = await logseq.DB.datascriptQuery(query);
+    namespacePages = namespacePages?.flat(); //FIXME is this needed?
+
+    let txtBeforeNamespacePage: string = "";
+    if (logseq.settings.bulletHandling == "Convert Bullets") {
+      txtBeforeNamespacePage = " ".repeat(blockLevel * 2) + "+ ";
+    }
+    
+    let namespaceContent = `**Namespace [[${currentNamespaceName}]]**\n\n`;
+    if (allPublicLinks.includes(currentNamespaceName.toLowerCase())) {
+      namespaceContent = namespaceContent.replace(`[[${currentNamespaceName}]]`,`[${currentNamespaceName}]({{< ref "/pages/${currentNamespaceName}" >}})`);
+    }
+
+    for (const page of namespacePages) {
+      const pageOrigName = page["original-name"];
+      if (allPublicLinks.includes(page["original-name"].toLowerCase())) {
+        const pageName = pageOrigName.replace(`${currentNamespaceName}/`, "");
+        namespaceContent = namespaceContent.concat(txtBeforeNamespacePage + `[${pageName}]({{< ref "/pages/${pageOrigName}" >}})\n\n`);
+      }
+    }
+
+    text = text.replace(result[0], namespaceContent);
+  }
+
+  return text;
+}
+
 async function parseText(block: BlockEntity) {
   //returns either a hugo block or `undefined`
   let re: RegExp;
@@ -397,7 +433,10 @@ async function parseText(block: BlockEntity) {
   text = txtBefore + text + txtAfter;
 
   //internal links
-  text = parseLinks(text, allPublicPages)
+  text = parseLinks(text, allPublicPages);
+
+  //namespaces
+  text = await parseNamespaces(text, block.level);
 
   //youtube embed
   //Change {{youtube url}} via regex

@@ -403,7 +403,7 @@ async function parseText(block: BlockEntity) {
       element.match(/(?<=!\[.*\])(.*)/g).forEach((match) => {
         let finalLink = match.substring(1, match.length - 1);
         // return (match.substring(1, match.length - 1))
-        text = text.replace(match, match.toLowerCase());
+//        text = text.replace(match, match.toLowerCase());
         if (!finalLink.includes("http") || !finalLink.includes(".pdf")) {
           text = text.replace("../", "/");
           imageTracker.push(finalLink);
@@ -499,7 +499,7 @@ function addImageToZip(filePath) {
     if (base64 != "data:,") {
       zip.file(
         "assets/" +
-          filePath.split("/")[filePath.split("/").length - 1].toLowerCase(),
+          filePath.split("/")[filePath.split("/").length - 1],
         base64,
         { base64: true }
       );

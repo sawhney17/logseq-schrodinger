@@ -221,7 +221,7 @@ export async function getBlocksInPage(
 
     if (isLast) {
       setTimeout(() => {
-        console.log(zip);
+        //console.log(zip);
         zip.generateAsync({ type: "blob" }).then(function (content) {
           // see FileSaver.js
           saveAs(content, "publicExport.zip");
@@ -236,6 +236,50 @@ export async function getBlocksInPage(
   }
 }
 
+function youtubeTimestampMarkdownLink(videoId: string, timestamp:string):string {
+  return `[${displayTimestamp(timestamp)}](https://youtu.be/${videoId}?t=${timestamp})`;
+}
+
+function youtubeTimeStampLink(videoId: string, timestamp:string):string {
+  return `https://youtu.be/${videoId}?t=${timestamp}`;
+}
+
+function extractYoutubeTimestampSeconds(youtubeLink: string): string | null {
+  const youtubeTimestampRegex = /{{youtube-timestamp\s(\d+)}}/g;
+  const youtubeTimestamp = youtubeLink.match(youtubeTimestampRegex);
+  if (youtubeTimestamp != null) {
+    return youtubeTimestamp[0].match(/\d+/g)[0];
+  }
+  return null;
+}
+
+function displayTimestamp(seconds:string){
+  const timeStampString = new Date(Number.parseInt(seconds) * 1000).toISOString().slice(11, 19);
+  //remove leading zeros from hours but not minutes 00:01:26 -> 01:26 , 00:00:26 -> 0:26
+  const splitTimestamp = timeStampString.split(":");
+  if (splitTimestamp.length <= 2) {
+    return timeStampString; 
+  } else {
+    //remove leading 00:
+    if (splitTimestamp[0] === "00") {
+      return splitTimestamp.slice(1).join(":");
+    } else {
+      return timeStampString;
+    }
+  }
+}
+
+// ref = {{< youtube C2apEw9pgtw >}}
+function findPreviousYoutubeIdInRef(text:string): (string | null) {
+  const youtubeRegex = /{{<\s*youtube\s*([a-zA-Z0-9_-]+)\s*>}}/g;
+  const youtubeId = text.match(youtubeRegex);
+  if (youtubeId != null) {
+    return youtubeId[youtubeId.length - 1].match(/([a-zA-Z0-9_-]+)/g)[1];
+  }
+  return null;
+}
+
+
 async function parsePage(finalString: string, docTree) {
   // console.log("DB parsePage")
   for (const x in docTree) {
@@ -243,7 +287,7 @@ async function parsePage(finalString: string, docTree) {
     if (!(parseInt(x) === 0 && docTree[x].level === 1)) {
 
       //parseText will return 'undefined' if a block skipped
-      const ret = await parseText(docTree[x])
+      const ret = await parseText(finalString, docTree[x])
       if (typeof ret != "undefined") {
         finalString = `${finalString}\n${ret}`;
       }
@@ -253,6 +297,23 @@ async function parsePage(finalString: string, docTree) {
     }
   }
   return finalString;
+}
+
+function replaceYoutubeTimestampsWithLinks(blockText: string, pageText:string): string {
+  const youtubeTimestampRegex = /{{youtube-timestamp\s(\d+)}}/g;
+  const youtubeTimestamps = blockText.match(youtubeTimestampRegex);
+  if (youtubeTimestamps != null) {
+    youtubeTimestamps.forEach((timestamp) => {
+      const youtubeId = findPreviousYoutubeIdInRef(pageText);
+      if (youtubeId != null) {
+        blockText = blockText.replace(
+          timestamp,
+          youtubeTimestampMarkdownLink(youtubeId, timestamp.match(/\d+/g)[0])
+        );
+      }
+    });
+  }
+  return blockText;
 }
 
 function parseLinks_old(text: string, allPublicPages) {
@@ -359,12 +420,10 @@ async function parseNamespaces(text: string, blockLevel: number) {
 
   return text;
 }
-
-async function parseText(block: BlockEntity) {
+async function parseText(textSoFar:string="", block: BlockEntity) {
   //returns either a hugo block or `undefined`
   let re: RegExp;
   let text = block.content;
-  // console.log("block", block)
   let txtBefore: string = "";
   let txtAfter: string = "\n";
   const prevBlock: BlockEntity = await logseq.Editor.getBlock(block.left.id, {
@@ -382,7 +441,6 @@ async function parseText(block: BlockEntity) {
     });
 
     if (block != null) {
-      // console.log("DB blockId", blockId)
       text = text.replace(
         blockId[0],
         block.content.substring(0, block.content.indexOf("id::"))
@@ -438,6 +496,7 @@ async function parseText(block: BlockEntity) {
   //namespaces
   text = await parseNamespaces(text, block.level);
 
+
   //youtube embed
   //Change {{youtube url}} via regex
   const reYoutube = /{{youtube(.*?)}}/g;
@@ -446,10 +505,11 @@ async function parseText(block: BlockEntity) {
     const youtubeId = youtubeRegex.exec(match)
     if (youtubeId != null) {
       return `{{< youtube ${youtubeId[2]} >}}`
+    } else {
+      return match;
     }
-  })
-
-
+  });
+  text = replaceYoutubeTimestampsWithLinks(text,textSoFar);
   //height and width syntax regex
   // {:height 239, :width 363}
   const heightWidthRegex = /{:height\s*[0-9]*,\s*:width\s*[0-9]*}/g
@@ -525,4 +585,8 @@ function download(filename, text) {
   element.click();
 
   document.body.removeChild(element);
+}
+
+function removeFirstAndLastLetter(str: string) {
+  return str.substrg(1, str.length - 1);
 }

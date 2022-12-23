@@ -509,6 +509,21 @@ async function parseText(textSoFar:string="", block: BlockEntity) {
       return match;
     }
   });
+
+  //twitter embed
+  //Change {{twitter url}} via regex
+
+  const reTwitter = /{{(twitter|tweet)(.*)}}/g;
+  text = text.replaceAll(reTwitter, (match)=>{
+    const twitterRegex = /https:\/\/twitter.com\/([a-zA-Z0-9_]{1,15})\/status\/([0-9]{1,20})/
+    const twitterId = twitterRegex.exec(match)
+    if (twitterId != null) {
+      return `{{< tweet user="${twitterId[1]}" id="${twitterId[2]}" >}}`
+    } else {
+      return match;
+    }
+  });
+
   text = replaceYoutubeTimestampsWithLinks(text,textSoFar);
   //height and width syntax regex
   // {:height 239, :width 363}

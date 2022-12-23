@@ -499,7 +499,7 @@ async function parseText(textSoFar:string="", block: BlockEntity) {
 
   //youtube embed
   //Change {{youtube url}} via regex
-  const reYoutube = /{{youtube(.*?)}}/g;
+  const reYoutube = /{{(youtube|video)(.*?)}}/g;
   text = text.replaceAll(reYoutube, (match)=>{
     const youtubeRegex = /(youtu(?:.*\/v\/|.*v\=|\.be\/))([A-Za-z0-9_\-]{11})/
     const youtubeId = youtubeRegex.exec(match)
@@ -511,7 +511,7 @@ async function parseText(textSoFar:string="", block: BlockEntity) {
   });
 
   //twitter embed
-  //Change {{twitter url}} via regex
+  //Change {{(twitter|tweet) url}} via regex
 
   const reTwitter = /{{(twitter|tweet)(.*)}}/g;
   text = text.replaceAll(reTwitter, (match)=>{

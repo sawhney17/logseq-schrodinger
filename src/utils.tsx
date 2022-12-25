@@ -221,7 +221,7 @@ export async function getBlocksInPage(
 
     if (isLast) {
         //console.log(zip);
-    await    zip.generateAsync({ type: "blob" }).then(function (content) {
+    await zip.generateAsync({ type: "blob" }).then(function (content) {
           // see FileSaver.js
           saveAs(content, "publicExport.zip");
           //wait one second
@@ -454,19 +454,21 @@ async function parseText(textSoFar:string="", block: BlockEntity) {
   //Logseq has extra info: height and width that can be used in an image template
   //Get regex to check if text contains a md image
   const reImage = /!\[.*?\]\((.*?)\)/g;
+  const imagePromises: Promise<void>[] = [];
   try {
     text.match(reImage).forEach((element) => {
-      element.match(/(?<=!\[.*\])(.*)/g).forEach(async (match) => {
+      element.match(/(?<=!\[.*\])(.*)/g).forEach( (match) => {
         let finalLink = match.substring(1, match.length - 1);
         // return (match.substring(1, match.length - 1))
 //        text = text.replace(match, match.toLowerCase());
         if (!finalLink.includes("http") || !finalLink.includes(".pdf")) {
           text = text.replace("../", "/");
           imageTracker.push(finalLink);
-          await addImageToZip(finalLink);
+          imagePromises.push(addImageToZip(finalLink));
         }
       });
     });
+    await Promise.all(imagePromises);
   } catch (error) { }
 
   // FIXME for now all indention is stripped out

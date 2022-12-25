@@ -333,7 +333,7 @@ function parseLinks_old(text: string, allPublicPages) {
         for (const x in allPublicPages) {
           if (result[2].toLowerCase == allPublicPages[x]["original-name"].toLowerCase) {
             const txt = reDescrLink.exec(result)
-            return (txt) ? `[${txt[1]}]({{< ref "${txt[2]}" >}})` : ""
+            return (txt) ? `[${txt[1]}]({{< sref "${txt[2]}" >}})` : ""
             // return (txt) ? `[${txt[1]}]({{< ref "${txt[2].replaceAll(" ","_")}" >}})` : ""
           }
         }
@@ -343,7 +343,7 @@ function parseLinks_old(text: string, allPublicPages) {
       const txt = match.substring(2, match.length - 2);
       for (const x in allPublicPages) {
         if (txt.toUpperCase() == allPublicPages[x]["original-name"].toUpperCase()) {
-          return `[${txt}]({{< ref "${allPublicPages[x]["original-name"].replaceAll(
+          return `[${txt}]({{< sref "${allPublicPages[x]["original-name"].replaceAll(
             " ",
             " "
           )}" >}})`;

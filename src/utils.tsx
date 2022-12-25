@@ -552,7 +552,8 @@ async function parseText(textSoFar:string="", block: BlockEntity) {
 
 async function getBase64Image2(url): Promise<string | null>{
   //if the url is a gif png or jpg return null regex
-  if (url.match(/(gif|png|jpg|jpeg|webp)$/i) === null) return null;
+  if (url.match(/(gif|png|jpg|jpeg|webp|mp4)$/i) === null) return null;
+// log if mp4
   const response = await fetch(url);
   const blob = await response.blob();
   return await new Promise((resolve, reject) => {
@@ -560,7 +561,7 @@ async function getBase64Image2(url): Promise<string | null>{
     reader.onloadend = () => {
      const res = reader.result;
      if (typeof res === 'string'){
-      const b64Regex = /^data:image\/(gif|png|jpg|jpeg|webp);base64,/;
+      const b64Regex = /^data:(image|video)\/(gif|png|jpg|jpeg|webp|mp4);base64,/;
       if (b64Regex.test(res)) {
        const b64 = res.replace(b64Regex, "");
        resolve(b64);

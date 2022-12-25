@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "parcel build --no-source-maps index.html --public-url ./"
+    "build": "parcel build index.html --public-url ./"
   },
   "keywords": [],
   "author": "Aryan Sawhney & Alex Qwxlea",

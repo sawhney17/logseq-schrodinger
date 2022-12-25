@@ -220,18 +220,16 @@ export async function getBlocksInPage(
     );
 
     if (isLast) {
-      setTimeout(() => {
         //console.log(zip);
-        zip.generateAsync({ type: "blob" }).then(function (content) {
+    await    zip.generateAsync({ type: "blob" }).then(function (content) {
           // see FileSaver.js
           saveAs(content, "publicExport.zip");
           //wait one second
           // setTimeout(() => {
-          //   saveAs(content, "publicExport.zip");
+        //   saveAs(content, "publicExport.zip");
           // }, 1000);
           zip = new JSZip();
         });
-      }, imageTracker.length * 102);
     }
   }
 }
@@ -334,7 +332,7 @@ function parseLinks_old(text: string, allPublicPages) {
           if (result[2].toLowerCase == allPublicPages[x]["original-name"].toLowerCase) {
             const txt = reDescrLink.exec(result)
             return (txt) ? `[${txt[1]}]({{< sref "${txt[2]}" >}})` : ""
-            // return (txt) ? `[${txt[1]}]({{< ref "${txt[2].replaceAll(" ","_")}" >}})` : ""
+            // return (txt) ? `[${txt[1]}]({{< sref "${txt[2].replaceAll(" ","_")}" >}})` : ""
           }
         }
       });
@@ -375,7 +373,7 @@ function parseLinks(text: string, allPublicPages) {
   let result
   while(result = (reDescrLink.exec(text) || reLink.exec(text))) {
     if (allPublicLinks.includes(result[result.length - 1].toLowerCase())) {
-      text = text.replace(result[0],`[${result[1]}]({{< ref "/pages/${result[result.length - 1]}" >}})`)
+      text = text.replace(result[0],`[${result[1]}]({{< sref "/pages/${result[result.length - 1]}" >}})`)
     }
   } 
     if (logseq.settings.linkFormat == "Without brackets") {
@@ -404,14 +402,14 @@ async function parseNamespaces(text: string, blockLevel: number) {
     
     let namespaceContent = `**Namespace [[${currentNamespaceName}]]**\n\n`;
     if (allPublicLinks.includes(currentNamespaceName.toLowerCase())) {
-      namespaceContent = namespaceContent.replace(`[[${currentNamespaceName}]]`,`[${currentNamespaceName}]({{< ref "/pages/${currentNamespaceName}" >}})`);
+      namespaceContent = namespaceContent.replace(`[[${currentNamespaceName}]]`,`[${currentNamespaceName}]({{< sref "/pages/${currentNamespaceName}" >}})`);
     }
 
     for (const page of namespacePages) {
       const pageOrigName = page["original-name"];
       if (allPublicLinks.includes(page["original-name"].toLowerCase())) {
         const pageName = pageOrigName.replace(`${currentNamespaceName}/`, "");
-        namespaceContent = namespaceContent.concat(txtBeforeNamespacePage + `[${pageName}]({{< ref "/pages/${pageOrigName}" >}})\n\n`);
+        namespaceContent = namespaceContent.concat(txtBeforeNamespacePage + `[${pageName}]({{< sref "/pages/${pageOrigName}" >}})\n\n`);
       }
     }
 
@@ -458,14 +456,14 @@ async function parseText(textSoFar:string="", block: BlockEntity) {
   const reImage = /!\[.*?\]\((.*?)\)/g;
   try {
     text.match(reImage).forEach((element) => {
-      element.match(/(?<=!\[.*\])(.*)/g).forEach((match) => {
+      element.match(/(?<=!\[.*\])(.*)/g).forEach(async (match) => {
         let finalLink = match.substring(1, match.length - 1);
         // return (match.substring(1, match.length - 1))
 //        text = text.replace(match, match.toLowerCase());
         if (!finalLink.includes("http") || !finalLink.includes(".pdf")) {
           text = text.replace("../", "/");
           imageTracker.push(finalLink);
-          addImageToZip(finalLink);
+          await addImageToZip(finalLink);
         }
       });
     });
@@ -550,6 +548,31 @@ async function parseText(textSoFar:string="", block: BlockEntity) {
   }
 }
 
+async function getBase64Image2(url): Promise<string | null>{
+  //if the url is a gif png or jpg return null regex
+  if (url.match(/(gif|png|jpg|jpeg|webp)$/i) === null) return null;
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+     const res = reader.result;
+     if (typeof res === 'string'){
+      const b64Regex = /^data:image\/(gif|png|jpg|jpeg|webp);base64,/;
+      if (b64Regex.test(res)) {
+       const b64 = res.replace(b64Regex, "");
+       resolve(b64);
+      } else {
+        resolve(null);
+      }
+     } else {
+      resolve(null);
+     }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
 function getBase64Image(img) {
   var canvas = document.createElement("canvas");
   canvas.width = img.width;
@@ -560,18 +583,18 @@ function getBase64Image(img) {
   return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
 }
 
-function addImageToZip(filePath) {
-  var element = document.createElement("img");
+async function addImageToZip(filePath) {
+  // var element = document.createElement("img");
   let formattedFilePath = filePath.replace("..", path);
-  element.setAttribute("src", formattedFilePath);
-  element.style.display = "none";
+  // element.setAttribute("src", formattedFilePath);
+  // element.style.display = "none";
 
-  document.body.appendChild(element);
-  setTimeout(() => {
-    var base64 = getBase64Image(element);
-    document.body.removeChild(element);
-    console.log(base64)
-    if (base64 != "data:,") {
+  // document.body.appendChild(element);
+  try {
+    var base64: string = await getBase64Image2(formattedFilePath);
+    // document.body.removeChild(element);
+// data in base64 regex
+    if (base64) {
       zip.file(
         "assets/" +
           filePath.split("/")[filePath.split("/").length - 1],
@@ -581,7 +604,10 @@ function addImageToZip(filePath) {
     } else {
       // console.log(base64);
     }
-  }, 100);
+} catch (e) {
+  console.error(`Error with ${filePath}`);
+  }
+
 }
 
 //FIXME don't get it, but it works
@@ -600,8 +626,4 @@ function download(filename, text) {
   element.click();
 
   document.body.removeChild(element);
-}
-
-function removeFirstAndLastLetter(str: string) {
-  return str.substrg(1, str.length - 1);
 }

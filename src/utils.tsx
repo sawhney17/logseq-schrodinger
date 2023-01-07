@@ -234,12 +234,9 @@ export async function getBlocksInPage(
   }
 }
 
-function youtubeTimestampMarkdownLink(videoId: string, timestamp:string):string {
-  return `[${displayTimestamp(timestamp)}](https://youtu.be/${videoId}?t=${timestamp})`;
-}
-
-function youtubeTimeStampLink(videoId: string, timestamp:string):string {
-  return `https://youtu.be/${videoId}?t=${timestamp}`;
+// {{< ytime videoId=C2apEw9pgtw start=25 time=00:25 >}}
+function youtubeTimestampShortcode(videoId: string, timestamp:string):string {
+  return `{{< ytime videoId="${videoId}" start="${timestamp}" time="${displayTimestamp(timestamp)}" >}}`;
 }
 
 function extractYoutubeTimestampSeconds(youtubeLink: string): string | null {
@@ -306,7 +303,7 @@ function replaceYoutubeTimestampsWithLinks(blockText: string, pageText:string): 
       if (youtubeId != null) {
         blockText = blockText.replace(
           timestamp,
-          youtubeTimestampMarkdownLink(youtubeId, timestamp.match(/\d+/g)[0])
+          youtubeTimestampShortcode(youtubeId, timestamp.match(/\d+/g)[0])
         );
       }
     });

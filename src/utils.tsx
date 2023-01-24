@@ -449,8 +449,7 @@ async function parseText(block: BlockEntity) {
   //namespaces
   text = await parseNamespaces(text, block.level);
 
-  //youtube embed
-  //Change {{youtube url}} via regex
+  //Change {{youtube-timestamp ts}} via regex
   const yTimestamps = /{{youtube-timestamp (.*?)}}/g;
   text = text.replaceAll(yTimestamps, (match)=>{
     const timestampRegex = /{{youtube-timestamp ([0-9]+)}}/

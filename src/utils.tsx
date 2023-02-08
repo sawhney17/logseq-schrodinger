@@ -360,6 +360,17 @@ async function parseNamespaces(text: string, blockLevel: number) {
   return text;
 }
 
+function secondsToHms(d) {
+  d = Number(d);
+  var h = Math.floor(d / 3600);
+  var m = Math.floor(d % 3600 / 60);
+  var s = Math.floor(d % 3600 % 60);
+  var hDisplay = h > 9 ? String(h) : '0'+ String(h);
+  var mDisplay = m > 9 ? String(m) : '0'+ String(m);
+  var sDisplay = s > 9 ? String(s) : '0'+ String(s);
+  return hDisplay + ':' + mDisplay + ':' + sDisplay;
+}
+
 async function parseText(block: BlockEntity) {
   //returns either a hugo block or `undefined`
   let re: RegExp;
@@ -437,6 +448,16 @@ async function parseText(block: BlockEntity) {
 
   //namespaces
   text = await parseNamespaces(text, block.level);
+
+  //Change {{youtube-timestamp ts}} via regex
+  const yTimestamps = /{{youtube-timestamp (.*?)}}/g;
+  text = text.replaceAll(yTimestamps, (match)=>{
+    const timestampRegex = /{{youtube-timestamp ([0-9]+)}}/
+    const timestamp = timestampRegex.exec(match)
+    if (timestamp!= null) {
+      return `@${secondsToHms(timestamp[1])}`
+    }
+  })
 
   //youtube embed
   //Change {{youtube url}} via regex

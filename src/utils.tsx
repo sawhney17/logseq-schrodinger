@@ -429,8 +429,20 @@ async function parseText(block: BlockEntity) {
   // Experiment, no more lists, unless + or numbers
   // (unless they're not)
   if (logseq.settings.bulletHandling == "Convert Bullets") {
+    // convert numbered-list bullets
+    if (block.level === 1) {
+      if (text.includes("logseq.order-list-type:: number")) {
+        txtBefore = "1. ";
+        text = text.replace("logseq.order-list-type:: number", "");
+      }
+    }
     if (block.level > 1) {
-      txtBefore = " ".repeat((block.level - 1) * 2) + "+ ";
+      if (text.includes("logseq.order-list-type:: number")) {
+        txtBefore = " ".repeat((block.level - 1) * 4) + "1. ";
+        text = text.replace("logseq.order-list-type:: number", "");
+      } else {
+        txtBefore = " ".repeat((block.level - 1) * 2) + "+ ";
+      }
       // txtBefore = "\n" + txtBefore
       if (prevBlock.level === block.level) txtAfter = "";
     }

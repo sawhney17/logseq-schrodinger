@@ -237,7 +237,7 @@ export async function getBlocksInPage(
 
 // {{< ytime videoId=C2apEw9pgtw start=25 time=00:25 >}}
 function youtubeTimestampShortcode(videoId: string, timestamp:string):string {
-  return `{{< ytime videoId="${videoId}" start="${timestamp}" time="${displayTimestamp(timestamp)}" >}}`;
+  return `{{ ytime videoId="${videoId}" start="${timestamp}" time="${displayTimestamp(timestamp)}" }}`;
 }
 
 function extractYoutubeTimestampSeconds(youtubeLink: string): string | null {
@@ -267,7 +267,7 @@ function displayTimestamp(seconds:string){
 
 // ref = {{< youtube C2apEw9pgtw >}}
 function findPreviousYoutubeIdInRef(text:string): (string | null) {
-  const youtubeRegex = /{{<\s*youtube\s*([a-zA-Z0-9_-]+)\s*>}}/g;
+  const youtubeRegex = /{{\s*youtube\s*([a-zA-Z0-9_-]+)\s*}}/g;
   const youtubeId = text.match(youtubeRegex);
   if (youtubeId != null) {
     return youtubeId[youtubeId.length - 1].match(/([a-zA-Z0-9_-]+)/g)[1];
@@ -323,31 +323,6 @@ function parseLinks_old(text: string, allPublicPages) {
   const reLink:RegExp      = /\[\[.*?\]\]/g
   const reDescrLink:RegExp = /\[([a-zA-Z ]*?)\]\(\[\[(.*?)\]\]\)/g
                              //[garden]([[digital garden]])
-  if (logseq.settings.linkFormat == "Hugo Format") {
-    if (reDescrLink.test(text)) {
-      text = text.replaceAll(reDescrLink, (result) => {
-        for (const x in allPublicPages) {
-          if (result[2].toLowerCase == allPublicPages[x]["original-name"].toLowerCase) {
-            const txt = reDescrLink.exec(result)
-            return (txt) ? `[${txt[1]}]({{< sref "${txt[2]}" >}})` : ""
-            // return (txt) ? `[${txt[1]}]({{< sref "${txt[2].replaceAll(" ","_")}" >}})` : ""
-          }
-        }
-      });
-    }
-    text = text.replaceAll(reLink, (match) => {
-      const txt = match.substring(2, match.length - 2);
-      for (const x in allPublicPages) {
-        if (txt.toUpperCase() == allPublicPages[x]["original-name"].toUpperCase()) {
-          return `[${txt}]({{< sref "${allPublicPages[x]["original-name"].replaceAll(
-            " ",
-            " "
-          )}" >}})`;
-        }
-      }
-      return txt;
-    });
-  }
   if (logseq.settings.linkFormat == "Without brackets") {
     text = text.replaceAll("[[", "");
     text = text.replaceAll("]]", "");
@@ -368,12 +343,12 @@ function parseLinks(text: string, allPublicPages) {
   // FIXME why doesn't this work?
   // if (! reDescrLink.test(text) && ! reLink.test(text)) return text
   
-  let result
-  while(result = (reDescrLink.exec(text) || reLink.exec(text))) {
-    if (allPublicLinks.includes(result[result.length - 1].toLowerCase())) {
-      text = text.replace(result[0],`[${result[1]}]({{< sref "/pages/${result[result.length - 1]}" >}})`)
-    }
-  } 
+  // let result
+  // while(result = (reDescrLink.exec(text) || reLink.exec(text))) {
+  //   if (allPublicLinks.includes(result[result.length - 1].toLowerCase())) {
+  //     text = text.replace(result[0],`[${result[1]}]({{< sref "/pages/${result[result.length - 1]}" >}})`)
+  //   }
+  // } 
     if (logseq.settings.linkFormat == "Without brackets") {
       text = text.replaceAll("[[", "");
       text = text.replaceAll("]]", "");
@@ -399,17 +374,17 @@ async function parseNamespaces(text: string, blockLevel: number) {
     }
     
     let namespaceContent = `**Namespace [[${currentNamespaceName}]]**\n\n`;
-    if (allPublicLinks.includes(currentNamespaceName.toLowerCase())) {
-      namespaceContent = namespaceContent.replace(`[[${currentNamespaceName}]]`,`[${currentNamespaceName}]({{< sref "/pages/${currentNamespaceName}" >}})`);
-    }
+    // if (allPublicLinks.includes(currentNamespaceName.toLowerCase())) {
+    //   namespaceContent = namespaceContent.replace(`[[${currentNamespaceName}]]`,`[${currentNamespaceName}]({{< sref "/pages/${currentNamespaceName}" >}})`);
+    // }
 
-    for (const page of namespacePages) {
-      const pageOrigName = page["original-name"];
-      if (allPublicLinks.includes(page["original-name"].toLowerCase())) {
-        const pageName = pageOrigName.replace(`${currentNamespaceName}/`, "");
-        namespaceContent = namespaceContent.concat(txtBeforeNamespacePage + `[${pageName}]({{< sref "/pages/${pageOrigName}" >}})\n\n`);
-      }
-    }
+    // for (const page of namespacePages) {
+    //   const pageOrigName = page["original-name"];
+    //   if (allPublicLinks.includes(page["original-name"].toLowerCase())) {
+    //     const pageName = pageOrigName.replace(`${currentNamespaceName}/`, "");
+    //     namespaceContent = namespaceContent.concat(txtBeforeNamespacePage + `[${pageName}]({{< sref "/pages/${pageOrigName}" >}})\n\n`);
+    //   }
+    // }
 
     text = text.replace(result[0], namespaceContent);
   }
@@ -430,6 +405,7 @@ async function parseText(textSoFar:string="", block: BlockEntity) {
   //match all results
   const matches = text.matchAll(reDraw)
   for (const match of matches) {
+    try {
     const drawName = match[1]
     const filePath = `${path}/draws/${drawName}.excalidraw`;
     // load file
@@ -442,6 +418,9 @@ async function parseText(textSoFar:string="", block: BlockEntity) {
     base64,
     { base64: true }
   );
+   } catch (e) {
+    console.warn('error fetching file', match, e)
+   }
    }
 
    //replace matches with image markdown tag like ![2021-03-07-20-11-28](/assets/2021-03-07-20-11-28.svg)
@@ -523,7 +502,7 @@ async function parseText(textSoFar:string="", block: BlockEntity) {
     const youtubeRegex = /(youtu(?:.*\/v\/|.*v\=|\.be\/))([A-Za-z0-9_\-]{11})/
     const youtubeId = youtubeRegex.exec(match)
     if (youtubeId != null) {
-      return `{{< youtube ${youtubeId[2]} >}}`
+      return `{{ youtube ${youtubeId[2]} }}`
     } else {
       return match;
     }
@@ -537,7 +516,7 @@ async function parseText(textSoFar:string="", block: BlockEntity) {
     const twitterRegex = /https:\/\/twitter.com\/([a-zA-Z0-9_]{1,15})\/status\/([0-9]{1,20})/
     const twitterId = twitterRegex.exec(match)
     if (twitterId != null) {
-      return `{{< tweet user="${twitterId[1]}" id="${twitterId[2]}" >}}`
+      return `{{ tweet user="${twitterId[1]}" id="${twitterId[2]}" }}`
     } else {
       return match;
     }
@@ -550,11 +529,11 @@ async function parseText(textSoFar:string="", block: BlockEntity) {
   text = text.replaceAll(heightWidthRegex, "")
 
   //highlighted text, not supported in hugo by default!
-  re = /(==(.*?)==)/gm;
-  text = text.replace(re, "{{< logseq/mark >}}$2{{< / logseq/mark >}}");
+  // re = /(==(.*?)==)/gm;
+  // text = text.replace(re, "{{< logseq/mark >}}$2{{< / logseq/mark >}}");
 
   re = /#\+BEGIN_([A-Z]*)[^\n]*\n(.*)#\+END_[^\n]*/gms;
-  text = text.replace(re, "{{< logseq/org$1 >}}$2{{< / logseq/org$1 >}}");
+  text = text.replace(re, "$2");
   // text = text.toLowerCase();
 
   text = text.replace(/:LOGBOOK:|collapsed:: true/gi, "");

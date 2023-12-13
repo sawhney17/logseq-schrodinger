@@ -444,6 +444,8 @@ async function parseText(textSoFar:string="", block: BlockEntity) {
     }
   }
   
+  // remove heading:: 1 from text
+  text = text.replace(/heading:: \d/g, "");
   //task markers - skip
   if (block.marker && ! logseq.settings.exportTasks ) return
 

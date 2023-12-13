@@ -11,6 +11,7 @@ import { BlockEntity, PageEntity, SettingSchemaDesc } from '@logseq/libs/dist/LS
 import App from './App';
 import { handleClosePopup } from './handleClosePopup';
 import { linkFormats, path } from './index';
+import { exportToSvg } from "@excalidraw/utils";
 
 export var blocks2 = [];
 var errorTracker = [];
@@ -424,6 +425,27 @@ async function parseText(textSoFar:string="", block: BlockEntity) {
   const prevBlock: BlockEntity = await logseq.Editor.getBlock(block.left.id, {
     includeChildren: false,
   });  
+  //creAte regex to match each excalidraw block such as [[draws/2023-03-07-20-11-28.excalidraw]] and extract filename
+  const reDraw:RegExp = /\[\[draws\/([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2})\.excalidraw\]\]/gmi
+  //match all results
+  const matches = text.matchAll(reDraw)
+  for (const match of matches) {
+    const drawName = match[1]
+    const filePath = `${path}/draws/${drawName}.excalidraw`;
+    // load file
+   const response = await fetch(filePath);
+   const svgText = await response.json();
+   const diagramSvg = await exportToSvg(svgText);
+   const base64 = window.btoa(diagramSvg.outerHTML);
+   zip.file(
+    "assets/" + drawName + ".svg",
+    base64,
+    { base64: true }
+  );
+   }
+
+   //replace matches with image markdown tag like ![2021-03-07-20-11-28](/assets/2021-03-07-20-11-28.svg)
+    text = text.replace( reDraw, `![$1](assets/$1.svg)`)
 
   //Block refs - needs to be at the beginning so the block gets parsed
   //FIXME they need some indicator that it *was* an embed

@@ -9,10 +9,9 @@ import ReactDOM from "react-dom";
 import App from "./App";
 import { handleClosePopup } from "./handleClosePopup";
 import { getAllPublicPages, getBlocksInPage } from "./utils";
-
 export var path = "";
 
-const linkFormats = ["[[Logseq Format]]", "Without brackets"]
+export const linkFormats = ["[[Logseq Format]]", "Without brackets"]
 
 let settings: SettingSchemaDesc[] = [
   {

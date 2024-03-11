@@ -20,25 +20,6 @@ var imageTracker = [];
 let allPublicPages;
 let allPublicLinks = [] //list of all exported pages
 
-//Retired function
-//I kept on missing pages?!?!?!
-//Never figured out why
-export async function getAllPublicPages_orig() {
-  errorTracker = [];
-  logseq.DB.q("(page-property public)").then((result) => {
-    const mappedResults = result.map((page) => {
-      return page.name;
-    });
-    for (const x in mappedResults) {
-      if (x != `${mappedResults.length - 1}`) {
-        getBlocksInPage({ page: mappedResults[x] }, false, false);
-      } else {
-        getBlocksInPage({ page: mappedResults[x] }, false, true);
-      }
-    }
-  });
-}
-
 export async function getAllPublicPages() {
   //needs to be both public, and a page (with a name)
   const query =
@@ -94,11 +75,31 @@ async function parseMeta(
     propList = curPage?.page.properties;
   }
   //Title
-  //FIXME is filename used?
   propList.title = curPage.page["original-name"];
   if (titleDetails.length > 0) {
     propList.title = titleDetails[0].noteName;
-    propList.fileName = titleDetails[1].hugoFileName;
+  }
+  // // Add slug with subfolder path
+  const nameParts = curPage.page["original-name"].split('/');
+  if (propList.slug) {
+    propList.slug = propList.slug.toLowerCase().replace(/\s+/g, '-');
+  } else {
+    if (nameParts.length > 1) {
+      propList.slug = nameParts.slice(0, -1).join('/') + '/' + nameParts[nameParts.length - 1].replaceAll(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
+    } else {
+      propList.slug = curPage.page["original-name"].replaceAll(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
+    }
+    propList.slug = propList.slug.toLowerCase().replace(/\s+/g, '-');
+    // Remove leading '/' if it exists
+    if (propList.slug.startsWith('/')) {
+      propList.slug = propList.slug.slice(1);
+    }
+  }
+
+  if (propList.coverimage) {
+    // Remove quotes if they exist
+    const imageUrl = propList.coverimage.replace(/^"(.*)"$/, "$1");
+    propList.coverimage = `../..${imageUrl}`;
   }
 
   //Tags
@@ -208,27 +209,21 @@ export async function getBlocksInPage(
   if (singleFile) {
     logseq.hideMainUI();
     handleClosePopup();
-    download(`${titleDetails[1].hugoFileName}.md`, finalString);
-  } else {
-    // console.log(`e["original-name"]: ${e["original-name"]}`);
-    //page looks better in the URL 
+    download(`${curPage["original-name"]}.md`, finalString);
+  } else {  
     zip.file(
-      `pages/${curPage["original-name"].replaceAll(
+      `pages/${curPage["original-name"].split('/').pop().replaceAll(
         /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
         ""
-      )}.md`,
+      ).replace(/\s+/g, '-')}.md`,
       finalString
     );
-
+    
     if (isLast) {
         //console.log(zip);
     await zip.generateAsync({ type: "blob" }).then(function (content) {
           // see FileSaver.js
           saveAs(content, "publicExport.zip");
-          //wait one second
-          // setTimeout(() => {
-        //   saveAs(content, "publicExport.zip");
-          // }, 1000);
           zip = new JSZip();
         });
     }
@@ -424,7 +419,7 @@ async function parseText(textSoFar:string="", block: BlockEntity) {
    }
 
    //replace matches with image markdown tag like ![2021-03-07-20-11-28](/assets/2021-03-07-20-11-28.svg)
-    text = text.replace( reDraw, `![$1](assets/$1.svg)`)
+    text = text.replace( reDraw, `![$1](/assets/$1.svg)`)
 
   //Block refs - needs to be at the beginning so the block gets parsed
   //FIXME they need some indicator that it *was* an embed
@@ -600,7 +595,7 @@ async function addImageToZip(filePath) {
     if (base64) {
       zip.file(
         "assets/" +
-          filePath.split("/")[filePath.split("/").length - 1],
+          filePath.split("/")[filePath.split("/").length - 1].replace(/\s+/g, '-'),
         base64,
         { base64: true }
       );
@@ -615,6 +610,8 @@ async function addImageToZip(filePath) {
 
 //FIXME don't get it, but it works
 function download(filename, text) {
+  filename = filename.toLowerCase().replace(/\s+/g, '-');
+
   var element = document.createElement("a");
   element.setAttribute(
     "href",

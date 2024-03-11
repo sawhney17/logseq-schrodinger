@@ -41,6 +41,9 @@ async function parsePageProperties(page: PageEntity) {
     categories: properties.categories || properties.category || [],
     date: properties.date || formatDate(page['created-at']),
     lastMod: properties.lastmod || formatDate(page['updated-at']),
+    public: properties.public || false,
+    blogtitle: properties.blogtitle || '',
+    description: properties.description || ''
   };
 
   if (properties.coverimage) {
@@ -49,7 +52,7 @@ async function parsePageProperties(page: PageEntity) {
 
   let yamlString = '---';
   for (const [key, value] of Object.entries(metadata)) {
-    yamlString += `\n${key}: ${Array.isArray(value) ? value.join(', ') : value}`;
+    yamlString += `\n${key}: ${Array.isArray(value) ? value.map(v => `"${v}"`).join(', ') : `"${value}"`}`;
   }
   yamlString += '\n---\n\n';
 
@@ -86,6 +89,8 @@ async function parseBlocks(markdownString: string, blocks: BlockEntity[]): Promi
 
 async function parseBlockContent(block: BlockEntity): Promise<string> {
   let content = block.content;
+  content = content.replace(/^[a-z]+::.*\n/gim, '');
+
 
   // Convert Excalidraw blocks to image links
   const excalidrawRegex = /\[\[draws\/([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2})\.excalidraw\]\]/gi;

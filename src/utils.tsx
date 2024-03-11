@@ -49,9 +49,9 @@ async function parsePageProperties(page: PageEntity) {
 
   let yamlString = '---';
   for (const [key, value] of Object.entries(metadata)) {
-    yamlString += `\n${key}: ${Array.isArray(value) ? value.map((v) => `\n- ${v}`).join('') : value}`;
+    yamlString += `\n${key}: ${Array.isArray(value) ? value.join(', ') : value}`;
   }
-  yamlString += '\n---';
+  yamlString += '\n---\n\n';
 
   return yamlString;
 }
@@ -75,7 +75,7 @@ export async function getBlocksInPage(page: PageEntity, isLastPage: boolean) {
 async function parseBlocks(markdownString: string, blocks: BlockEntity[]): Promise<string> {
   for (const block of blocks) {
     if (block.content) {
-      markdownString += '\n' + (await parseBlockContent(block));
+      markdownString += (await parseBlockContent(block)) + '\n\n';
     }
     if (block.children.length > 0) {
       markdownString = await parseBlocks(markdownString, block.children);
@@ -146,9 +146,8 @@ async function parseBlockContent(block: BlockEntity): Promise<string> {
   // Remove code block properties and logbook entries
   content = content.replace(/(?:```[a-z]*\n)?(?::LOGBOOK:.*\n)+(?:END:.*\n)?```?/gis, '');
 
-  // Apply indentation based on block level
-  const indent = ' '.repeat(block.level * 2);
-  content = content.split('\n').map((line) => line.trim() && `${indent}- ${line}`).filter(Boolean).join('\n');
+  // Remove indentation and dashes
+  content = content.replace(/^\s*[-+*]\s*/gm, '');
 
   return content;
 }

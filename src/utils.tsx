@@ -55,6 +55,8 @@ async function parsePageProperties(page: PageEntity) {
     yamlString += `\n${key}: ${Array.isArray(value) ? value.map(v => `"${v}"`).join(', ') : `"${value}"`}`;
   }
   yamlString += '\n---\n\n';
+  yamlString = yamlString.trim();
+
 
   return yamlString;
 }

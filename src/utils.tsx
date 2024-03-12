@@ -25,7 +25,6 @@ function formatDate(timestamp: number): string {
   const day = `${date.getDate()}`.padStart(2, '0');
   return `${date.getFullYear()}-${month}-${day}`;
 }
-
 async function parsePageProperties(page: PageEntity) {
   const properties = page.properties || {};
   const nameParts = page['original-name'].split('/');
@@ -33,10 +32,8 @@ async function parsePageProperties(page: PageEntity) {
   const metadata = {
     title: properties.title || page['original-name'],
     slug: properties.slug
-      ? properties.slug.toLowerCase().replace(/\s+/g, '-')
-      : nameParts.length > 1
-      ? `${nameParts.slice(0, -1).join('/')}/`
-      : '' + nameParts[nameParts.length - 1].replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '').toLowerCase().replace(/\s+/g, '-'),
+    ? properties.slug.toLowerCase().replace(/\s+/g, '-')
+    : nameParts.join('/').replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '').toLowerCase().replace(/\s+/g, '-'),
     tags: properties.tags || [],
     categories: properties.categories || properties.category || [],
     date: properties.date || formatDate(page['created-at']),
@@ -52,11 +49,20 @@ async function parsePageProperties(page: PageEntity) {
 
   let yamlString = '---';
   for (const [key, value] of Object.entries(metadata)) {
-    yamlString += `\n${key}: ${Array.isArray(value) ? value.map(v => `"${v}"`).join(', ') : `"${value}"`}`;
+    if (value && value.length > 0) {
+      if (Array.isArray(value)) {
+        if (key === 'tags') {
+          yamlString += `\n${key}: [${value.map(v => `"${v}"`).join(', ')}]`;
+        } else {
+          yamlString += `\n${key}: ${value.map(v => `${v}`).join(', ')}`;
+        }
+      } else {
+        yamlString += `\n${key}: ${value}`;
+      }
+    }
   }
   yamlString += '\n---\n\n';
   yamlString = yamlString.trim();
-
 
   return yamlString;
 }

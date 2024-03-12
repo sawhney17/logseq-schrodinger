@@ -147,6 +147,8 @@ async function parseBlockContent(block: BlockEntity): Promise<string> {
         console.error(`Error processing image: ${imagePath}`);
       }
     }
+    const imagePropertiesRegex = /{:height \d+, :width \d+}/gi;
+    content = content.replace(imagePropertiesRegex, '');
   }
 
   // Convert YouTube and Twitter links to Hugo shortcodes

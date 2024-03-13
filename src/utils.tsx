@@ -147,7 +147,7 @@ async function parseBlockContent(block: BlockEntity): Promise<string> {
         console.error(`Error processing image: ${imagePath}`);
       }
     }
-    const imagePropertiesRegex = /{:height \d+, :width \d+}/gi;
+    const imagePropertiesRegex = /{:height\s*\d+,\s*:width\s*\d+}/gi;
     content = content.replace(imagePropertiesRegex, '');
   }
 

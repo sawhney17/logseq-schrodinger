@@ -161,6 +161,10 @@ async function parseBlockContent(block: BlockEntity): Promise<string> {
   // Remove code block properties and logbook entries
   content = content.replace(/(?:```[a-z]*\n)?(?::LOGBOOK:.*\n)+(?:END:.*\n)?```?/gis, '');
 
+   // Convert org mode quotes to Markdown blockquotes
+  content = content.replace(/^#\+BEGIN_QUOTE\s*([\s\S]*?)#\+END_QUOTE/gms, (_, quote) => {
+    return quote.split('\n').map(line => `> ${line}`).join('\n') + '\n';
+  });
   // Remove indentation and dashes
   content = content.replace(/^\s*[-+*]\s*/gm, '');
 

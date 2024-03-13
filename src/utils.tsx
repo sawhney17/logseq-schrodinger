@@ -52,7 +52,10 @@ async function parsePageProperties(page: PageEntity) {
     if (value && value.length > 0) {
       if (Array.isArray(value)) {
         if (key === 'tags') {
-          yamlString += `\n${key}: [${value.map(v => `"${v}"`).join(', ')}]`;
+          yamlString += `\n${key}:`;
+          for (const tag of value) {
+            yamlString += `\n  - ${tag}`;
+          }
         } else {
           yamlString += `\n${key}: ${value.map(v => `${v}`).join(', ')}`;
         }

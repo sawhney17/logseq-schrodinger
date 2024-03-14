@@ -137,6 +137,8 @@ async function parseBlockContent(block: BlockEntity): Promise<string> {
     let imagePath = match[1].replace(/^\.?\//, '');
     if (!imagePath.startsWith('http') && !imagePath.endsWith('.pdf')) {
       try {
+        imagePath = imagePath.replace(/\.\.\//g, '/');
+
         const response = await fetch(`${path}/${imagePath}`);
         const blob = await response.blob();
         const reader = new FileReader();
@@ -147,7 +149,7 @@ async function parseBlockContent(block: BlockEntity): Promise<string> {
         zip.file(`assets/${imagePath.split('/').pop()}`, base64.split(',')[1], { base64: true });
         content = content.replace(match[1], `/assets/${imagePath.split('/').pop()}`);
       } catch (error) {
-        console.error(`Error processing image: ${imagePath}`);
+        console.error(`Error processing image: ${imagePath} ${error}`);
       }
     }
     const imagePropertiesRegex = /{:height\s*\d+,\s*:width\s*\d+}/gi;

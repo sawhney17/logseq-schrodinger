@@ -159,13 +159,12 @@ async function parseBlockContent(block: BlockEntity): Promise<string> {
   // Convert YouTube and Twitter links to Hugo shortcodes
   content = content.replace(/{{\s*(?:youtube|video)\s+(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\s}]+))\s*}}/gi, (_, url, videoId) => `{{< youtube ${videoId} >}}`);
 
-  content = content.replace(/{{(twitter|tweet)\s+(https?:\/\/twitter\.com\/[a-z0-9_]+\/status\/\d+(?:\?[^}]+)?)}}/gi, (match, _, tweetUrl) => {
+  content = content.replace(/{{(twitter|tweet)\s+(https?:\/\/twitter\.com\/[a-z0-9_]+\/status\/\d+(?:\?[^}\s]+)?)\s*}}/gi, (match, _, tweetUrl) => {
     const [, username, tweetId] = tweetUrl.match(/twitter\.com\/([a-z0-9_]+)\/status\/(\d+)/i) || [];
     return username && tweetId ? `{{< tweet user="${username}" id="${tweetId}" >}}` : tweetUrl;
   });
   // Remove code block properties and logbook entries
-  content = content.replace(/(?:```[a-z]*\n)?(?::LOGBOOK:.*\n)+(?:END:.*\n)?```?/gis, '');
-
+  content = content.replace(/(?:(?:```[a-z]*\n)?(?::LOGBOOK:.*\n)+(?:END:.*\n)?```?|:LOGBOOK:.*:END:)/gis, '');
    // Convert org mode quotes to Markdown blockquotes
   content = content.replace(/^#\+BEGIN_QUOTE\s*([\s\S]*?)#\+END_QUOTE/gms, (_, quote) => {
     return quote.split('\n').map(line => `> ${line}`).join('\n') + '\n';

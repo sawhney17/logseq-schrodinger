@@ -40,6 +40,14 @@ let settings: SettingSchemaDesc[] = [
     title: "Do you want tasks to exported to Hugo?",
     description: "Yes, blocks with tasks will be exported: (TODO DOING DONE LATER NOW WAITING)",
     default: false,
+  },
+  {
+    key: "archetype",
+    type: "string",
+    title: "Additional archetype to add to each files",
+    description: "The following string will be added at the end of front matter for each files as a default configuration",
+    default: "",
+    inputAs: "textarea"
   }
 
 ];

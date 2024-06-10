@@ -156,7 +156,7 @@ async function parseMeta(
   for (const nono of nope){
     delete propList[nono]
   }
-  
+ 
   //convert propList to Hugo yaml
   // https://gohugo.io/content-management/front-matter/
   let ret = `---`;
@@ -168,6 +168,11 @@ async function parseMeta(
       ret += `\n${prop}: ${value}`;
     }
   }
+
+  //custom properties archetype
+  ret += "\n"
+  ret += logseq.settings.archetype;
+
   ret += "\n---";
   return ret;
 }

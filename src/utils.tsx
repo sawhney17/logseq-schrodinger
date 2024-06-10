@@ -94,7 +94,12 @@ async function parseMeta(
   }
   //Title
   //FIXME is filename used?
-  propList.title = curPage.page["original-name"];
+  if (logseq.settings.leafTitle) {
+    propList.title = curPage.page["original-name"].split("/").slice(-1)[0];
+  }
+  else {
+    propList.title = curPage.page["original-name"];
+  }
   if (titleDetails.length > 0) {
     propList.title = titleDetails[0].noteName;
     propList.fileName = titleDetails[1].hugoFileName;
@@ -104,18 +109,12 @@ async function parseMeta(
   propList.tags = curPage?.page.properties.tags
     ? curPage?.page.properties.tags
     : [];
-  if (tagsArray != []) {
-    let formattedTagsArray = [];
-    for (const tag in tagsArray) {
-      formattedTagsArray.push(tagsArray[tag].tags);
-    }
-    if (propList.tags != undefined) {
-      for (const tag in formattedTagsArray) {
-        propList.tags.push(formattedTagsArray[tag]);
-      }
-    } else {
-      propList.tags = formattedTagsArray;
-    }
+  for (const tag in tagsArray) {
+    propList.tags.push(tagsArray[tag].tags);
+  }
+  // Add tags from title
+  if(logseq.settings.tagsFromTitle) {
+    curPage.page["original-name"].split("/").slice(0,-1).forEach( tag => propList.tags.push(tag));
   }
 
   //Categories - 2 possible spellings!
@@ -168,11 +167,6 @@ async function parseMeta(
       ret += `\n${prop}: ${value}`;
     }
   }
-
-  //custom properties archetype
-  ret += "\n"
-  ret += logseq.settings.archetype;
-
   ret += "\n---";
   return ret;
 }

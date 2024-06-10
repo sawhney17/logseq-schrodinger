@@ -1,7 +1,7 @@
 import "@logseq/libs";
 import {
-  PageEntity,
   BlockEntity,
+  PageEntity,
   SettingSchemaDesc,
 } from "@logseq/libs/dist/LSPlugin";
 import React from "react";
@@ -12,7 +12,7 @@ import { getAllPublicPages, getBlocksInPage } from "./utils";
 
 export var path = "";
 
-const linkFormats = ["[[Logseq Format]]", "Without brackets"]
+const linkFormats = ["[[Logseq Format]]", "Without brackets"];
 
 let settings: SettingSchemaDesc[] = [
   {
@@ -28,28 +28,37 @@ let settings: SettingSchemaDesc[] = [
   {
     key: "bulletHandling",
     type: "enum",
-    enumChoices: ["Convert Bullets", "Remove All Bullets"], 
+    enumChoices: ["Convert Bullets", "Remove All Bullets"],
     enumPicker: "radio",
     title: "How would you like Logseq's bullets to be handled",
-    description: "How would you like Logseq's bullets to be handled, convert to hugo's native style or remove all bullets?",
+    description:
+      "How would you like Logseq's bullets to be handled, convert to hugo's native style or remove all bullets?",
     default: "Convert Bullets",
   },
   {
     key: "exportTasks",
     type: "boolean",
     title: "Do you want tasks to exported to Hugo?",
-    description: "Yes, blocks with tasks will be exported: (TODO DOING DONE LATER NOW WAITING)",
+    description:
+      "Yes, blocks with tasks will be exported: (TODO DOING DONE LATER NOW WAITING)",
     default: false,
   },
   {
-    key: "archetype",
-    type: "string",
-    title: "Additional archetype to add to each files",
-    description: "The following string will be added at the end of front matter for each files as a default configuration",
-    default: "",
-    inputAs: "textarea"
-  }
-
+    key: "leafTitle",
+    type: "boolean",
+    title: "Do you want to use only the leaf title?",
+    description:
+      "Use the end of title (what is after the last / in Logseq page title) as title instead of the whole title hierarchy." +
+      "\nExample: for 'parent/branch/leaf', title would be 'leaf'",
+    default: false,
+  },
+  {
+    key: "tagsFromTitle",
+    type: "boolean",
+    title: "Do you want to add Logseq title hierarchy to tags?",
+    description: "Add title hierarchy to tags?",
+    default: false,
+  },
 ];
 const main = async () => {
   console.log("Logseq Schrödinger plugin loaded");
@@ -58,31 +67,31 @@ const main = async () => {
     <React.StrictMode>
       <App />
     </React.StrictMode>,
-    document.getElementById("app")
+    document.getElementById("app"),
   );
 
   logseq.setMainUIInlineStyle({
-    position: 'fixed',
+    position: "fixed",
     zIndex: 999,
-    transform: 'translateX(-50%)',
-});
+    transform: "translateX(-50%)",
+  });
   function createModel() {
     return {
-      show(e:any) {
-        const {rect} = e
+      show(e: any) {
+        const { rect } = e;
 
-            logseq.setMainUIInlineStyle({
-                top: `${rect.top + 25}px`,
-                left: `${rect.right - 17}px`,
-            })
-            
+        logseq.setMainUIInlineStyle({
+          top: `${rect.top + 25}px`,
+          left: `${rect.right - 17}px`,
+        });
+
         logseq.toggleMainUI();
-        handleClosePopup()
+        handleClosePopup();
       },
 
-      export () {
-        getAllPublicPages()
-      }
+      export() {
+        getAllPublicPages();
+      },
     };
   }
 
@@ -92,10 +101,9 @@ const main = async () => {
   });
   logseq.App.registerPageMenuItem(
     "Export all public pages to hugo",
-    getAllPublicPages
+    getAllPublicPages,
   );
 
-  
   logseq.App.registerUIItem("toolbar", {
     key: "hugo-single-export",
     template: `
@@ -112,7 +120,7 @@ const main = async () => {
       </a>
     `,
   });
-  
+
   logseq.useSettingsSchema(settings);
   path = (await logseq.App.getCurrentGraph()).path;
 };

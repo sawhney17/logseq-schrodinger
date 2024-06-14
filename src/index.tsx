@@ -59,6 +59,20 @@ let settings: SettingSchemaDesc[] = [
     description: "Add title hierarchy to tags?",
     default: false,
   },
+  {
+    key: "assetsPath",
+    type: "string",
+    title: "Path to assets",
+    description: "Path of each assets will start with the following",
+    default: "assets",
+  },
+  {
+    key: "contentPath",
+    type: "string",
+    title: "Path to content",
+    description: "Path of each pages will start with the following",
+    default: "content/pages",
+  },
 ];
 const main = async () => {
   console.log("Logseq Schrödinger plugin loaded");

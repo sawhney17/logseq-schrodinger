@@ -67,11 +67,18 @@ let settings: SettingSchemaDesc[] = [
     default: "assets",
   },
   {
-    key: "contentPath",
+    key: "pagesPath",
     type: "string",
-    title: "Path to content",
+    title: "Path to pages",
     description: "Path of each pages will start with the following",
     default: "content/pages",
+  },
+  {
+    key: "journalPath",
+    type: "string",
+    title: "Path to journal pages",
+    description: "Path of each journal pages will start with the following",
+    default: "content/posts",
   },
 ];
 const main = async () => {

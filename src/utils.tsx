@@ -215,11 +215,16 @@ export async function getBlocksInPage(
   } else {
     // console.log(`e["original-name"]: ${e["original-name"]}`);
     //page looks better in the URL
+    let path = curPage["journal?"]
+      ? logseq.settings.journalPath
+      : logseq.settings.pagesPath;
+    path = path.replace(/\/$/, ""); // remove trailing slash
     zip.file(
-      logseq.settings.contentPath + `/${curPage["original-name"].replaceAll(
-        /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
-        "",
-      )
+      `${path}/${
+        curPage["original-name"].replaceAll(
+          /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
+          "",
+        )
       }.md`,
       finalString,
     );
@@ -227,7 +232,7 @@ export async function getBlocksInPage(
     if (isLast) {
       setTimeout(() => {
         console.log(zip);
-        zip.generateAsync({ type: "blob" }).then(function(content) {
+        zip.generateAsync({ type: "blob" }).then(function (content) {
           // see FileSaver.js
           saveAs(content, "publicExport.zip");
           //wait one second
@@ -249,7 +254,7 @@ async function parsePage(finalString: string, docTree) {
       //parseText will return 'undefined' if a block skipped
       const ret = await parseText(docTree[x]);
       if (typeof ret != "undefined") {
-        finalString = `${finalString}\n${ret}`;
+        finalString = `${finalString} \n${ret} `;
       }
 
       if (docTree[x].children.length > 0) {
@@ -277,11 +282,14 @@ function parseLinks_old(text: string, allPublicPages) {
         for (const x in allPublicPages) {
           if (
             result[2].toLowerCase ==
-            allPublicPages[x]["original-name"].toLowerCase
+              allPublicPages[x]["original-name"].toLowerCase
           ) {
             const txt = reDescrLink.exec(result);
-            return txt ? `[${txt[1]}]({{< ref "${txt[2]}" >}})` : "";
-            // return (txt) ? `[${txt[1]}]({{< ref "${txt[2].replaceAll(" ","_")}" >}})` : ""
+            return txt
+              ? `[${txt[1]}]({{ < ref "${txt[2]}" >}
+})`
+              : "";
+            // return (txt) ? `[${ txt[1] }]({{ < ref "${txt[2].replaceAll(" ","_")}" >}})` : ""
           }
         }
       });
@@ -292,11 +300,13 @@ function parseLinks_old(text: string, allPublicPages) {
         if (
           txt.toUpperCase() == allPublicPages[x]["original-name"].toUpperCase()
         ) {
-          return `[${txt}]({{< ref "${allPublicPages[x]["original-name"].replaceAll(
-            " ",
-            " ",
-          )
-            }" >}})`;
+          return `[${txt}]({{
+  < ref "${
+            allPublicPages[x]["original-name"].replaceAll(
+              " ",
+              " ",
+            )
+          } " >}})`;
         }
       }
       return txt;
@@ -369,7 +379,7 @@ async function parseNamespaces(text: string, blockLevel: number) {
         const pageName = pageOrigName.replace(`${currentNamespaceName}/`, "");
         namespaceContent = namespaceContent.concat(
           txtBeforeNamespacePage +
-          `[${pageName}]({{< ref "/pages/${pageOrigName}" >}})\n\n`,
+            `[${pageName}]({{< ref "/pages/${pageOrigName}" >}})\n\n`,
         );
       }
     }
@@ -444,7 +454,7 @@ async function parseText(block: BlockEntity) {
         }
       });
     });
-  } catch (error) { }
+  } catch (error) {}
 
   // FIXME for now all indention is stripped out
   // Add indention — level zero is stripped of "-", rest are lists
@@ -541,7 +551,7 @@ function addImageToZip(filePath) {
     if (base64 != "data:,") {
       zip.file(
         logseq.settings.assetsPath + "/" +
-        filePath.split("/")[filePath.split("/").length - 1].toLowerCase(),
+          filePath.split("/")[filePath.split("/").length - 1].toLowerCase(),
         base64,
         { base64: true },
       );

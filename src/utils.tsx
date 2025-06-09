@@ -461,7 +461,11 @@ async function parseText(block: BlockEntity) {
   // Experiment, no more lists, unless + or numbers
   // (unless they're not)
   if (logseq.settings.bulletHandling == "Convert Bullets") {
-    if (block.level > 1) {
+    // convert numbered-list bullets
+    if (text.includes("logseq.order-list-type:: number")) {
+      txtBefore = " ".repeat((block.level - 1) * 4) + "1. ";
+      text = text.replace("logseq.order-list-type:: number", "");
+    } else if (block.level > 1) {
       txtBefore = " ".repeat((block.level - 1) * 2) + "+ ";
       // txtBefore = "\n" + txtBefore
       if (prevBlock.level === block.level) txtAfter = "";
